@@ -65,3 +65,13 @@ def convert_str_to_datetime(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
     except Exception as e:
         print(f"Error converting {column_name} to datetime: {e}")
         return pd.DataFrame()
+
+
+def replace_longitude_latitude_with_geometry(df):
+    """
+    Replace the longitude and latitude columns with a geometry column.
+    """
+    df["GEOMETRY"] = gpd.points_from_xy(df["LONGITUDE"], df["LATITUDE"])
+    df.crs = "EPSG:4326"
+    df = df.drop(columns=["LONGITUDE", "LATITUDE"])
+    return df

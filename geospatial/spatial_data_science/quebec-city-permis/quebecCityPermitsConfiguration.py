@@ -10,7 +10,6 @@ quebecCityPermitsColumns = {
     "GEOMETRY": "geometry",
 }
 
-
 mySupabase = {
     "databaseName": "real-estate",
     "table": {
