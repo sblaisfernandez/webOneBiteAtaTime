@@ -162,6 +162,20 @@ Interface, Class, Enum
 
 #### Types vs. Interfaces
 
+| Feature                            | `interface`                                   | `type`                                             |
+|------------------------------------|-----------------------------------------------|----------------------------------------------------|
+| **Basic Syntax**                   | `interface User { name: string }`             | `type User = { name: string }`                     |
+| **Extending**                      | `interface A extends B`                       | `type A = B & C`                                   |
+| **Implements (Classes)**          | ✅ Yes                                         | ✅ Yes (indirectly, if structurally compatible)     |
+| **Declaration Merging**           | ✅ Yes — interfaces can merge                  | ❌ No — duplicate declarations cause errors         |
+| **Supports Primitives**           | ❌ No                                          | ✅ Yes (e.g., `type ID = string | number`)          |
+| **Supports Tuples / Unions**      | ❌ No                                          | ✅ Yes                                              |
+| **Mapped / Conditional Types**    | ❌ Limited support                             | ✅ Full support                                     |
+| **Recursive Types**               | ⚠️ Complex                                     | ✅ Supported                                        |
+| **Discriminated Unions**          | ⚠️ Verbose and awkward                         | ✅ Natural and expressive                          |
+| **Tooling & Intellisense**        | ✅ Better autocomplete in some editors         | ✅ Good, but can be more opaque in complex types    |
+| **Preferred For**                 | Objects, Class contracts, public APIs         | Complex types, unions, functional composition      |
+
 ## Types
 
 Several built-in utility types can be used to manipulate types.
@@ -369,7 +383,7 @@ newMenu.list();
 
 Constructors can be marked as private or protected.
 
-Private Constructors: Can be called only within the class itself. Private constructors are often used in scenarios where you want to enforce a singleton pattern or restrict the creation of instances to a factory method within the class
+Private Constructors: Can be called only within the class itself. Private constructors are often used in scenarios where you want to enforce a singleton pattern or restrict the creation of instances to a factory method within the class.
 
 Protected Constructors: Protected constructors are useful when you want to create a base class that should not be instantiated directly but can be extended by subclasses.
 
@@ -581,4 +595,4 @@ Readonly<Type>: This type makes all properties in Type readonly.
 
 [Reference](https://tutorialzine.com/2016/07/learn-typescript-in-30-minutes)
 
-[Devhints Cheatsheat](https://devhints.io/typescript)
+[Devhints Cheatsheet](https://devhints.io/typescript)

@@ -1,6 +1,3 @@
-# Ignore file under the file supabase
-supabase/
-
 # General
 .DS_Store
 .AppleDouble
@@ -46,3 +43,7 @@ node_modules/
 # Ignore __pychache__ file and cached python files
 __pycache__/*
 *.pyc
+
+# Supabase
+**/supabase/.branches
+**/supabase/.temp
