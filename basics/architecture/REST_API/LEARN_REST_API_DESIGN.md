@@ -9,19 +9,19 @@ REST API should be language agnostic.
 
 ## ROY Fielding 6 constraints
 
-- Uniform Interface: The client and the server should by decouble and evolve independently.
+- **Uniform Interface**: The client and the server should by decouple and evolve independently.
 
-- Stateless: The server should not save any states between different requests. The state of the session is exclusively left to the responsibility of the client. **All REST interactions are stateless. That is, each request contains all of the information necessary for a connector to understand the request, independent of any requests that may have preceded it.**
+- **Stateless:** The server should not save any states between different requests. The state of the session is exclusively left to the responsibility of the client. **All REST interactions are stateless. That is, each request contains all of the information necessary for a connector to understand the request, independent of any requests that may have preceded it.**
 
-- Cacheable: The Client should be able to store responses in a cache for the greater performance.
+- **Cacheable:** The Client should be able to store responses in a cache for the greater performance.
 
-- Client-server architecture: Client in the web browser and the Server on the back-end.
+- **Client-server** architecture: Client in the web browser and the Server on the back-end.
 
-- Layered System: The client can't tell whether it is connected directly to the end server, or to an intermediary. INtermediary servers can improve system scalability by enabling load-balancing and by providing shared caches. layers may also enforce security policies.
+- **Layered System**: The client can't tell whether it is connected directly to the end server, or to an intermediary. INtermediary servers can improve system scalability by enabling load-balancing and by providing shared caches. layers may also enforce security policies.
 
-- Code on Demand (optional): Server are able to temporarily extend client fonctionnality by transfering logic.Could be passing JS components.
+- **Code on** Demand (optional): Server are able to temporarily extend client fonctionnality by transfering logic.Could be passing JS components.
 
-# API Design
+### API Design
 
 - Resources: A resource is an object that's is referenced by it self.
 
@@ -154,7 +154,7 @@ response
 
 ## Documentation
 
-**API is a good has is ducomentation**
+**API is a good has is documentation**
 
 [Twilio](https://www.twilio.com/docs/api/rest/)
 [Google Map](https://developers.google.com/maps/documentation/)
