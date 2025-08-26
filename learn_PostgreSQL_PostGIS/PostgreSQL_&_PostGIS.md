@@ -1,4 +1,3 @@
-
 # PostgreSQL & PostGIS
 
 Installing Supabase.

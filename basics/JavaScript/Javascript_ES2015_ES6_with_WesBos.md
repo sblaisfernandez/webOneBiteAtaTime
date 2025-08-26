@@ -328,11 +328,11 @@ for(let i = 0; i < cuts.length; i++){
 // Can't be abord the loop, can't use the break keyword
 cuts.forEach( cut => console.log(cut))
 
-// loop over the prototype
+// loop over the prototype, iterate by the index of the array
 for(const cut in cuts) {
   console.log(cuts[cut])
 }
-// New ES6 for looping
+// New ES6 for looping, iterate by the value of the array
 for(const cut of cuts){
   // can be break
   if(cut === 'Brisket') {

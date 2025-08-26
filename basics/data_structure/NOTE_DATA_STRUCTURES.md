@@ -1,17 +1,17 @@
 # Data structures
 
-In computer science a data structure is a data organization and storage format that enables efficient access and modification.
+In computer science a data structure is a data organization and storage format that enables efficient access and modification of the data.
 
-Developer are interested in time and space complexity associated with the fourth fundamental operations: `Access`, `Insertion`, `Deletion` And `search`.
+Developer are interested in time and space complexity associated with the fourth fundamental operations: `Access`, `search`, `Insertion`, And `Deletion`.
 
-A data structure is a way of organizing and storing data in a computer computer so that it can be access and use efficiently. It's the defined relationship between the data and the operation that can be performed on the data.
+A data structure is a way of organizing and storing data in a computer so that it can be access and use efficiently. It's the defined relationship between the data and the operation that can be performed on the data.
 
 **Reference**
 
 - [Data Structure](https://www.geeksforgeeks.org/data-structures/)
 - [Data structure in Javascript](https://www.geeksforgeeks.org/courses/data-structures-and-algorithms-in-javascript?utm_source=geeksforgeeks&utm_medium=article_bottom_text_dsa&utm_campaign=courses)
 
-## Why data a structure
+## Why data as structure
 
 - **Efficient data management**: They enable efficient storage and retrieval of data, Reducing processing time and improving performance.
 
@@ -23,13 +23,60 @@ A data structure is a way of organizing and storing data in a computer computer 
 
 - **Algorithm optimization**: The choice of the appropriate date structure can Significantly impact the efficiency of algorithm that operate on the data.
 
+## Big O Notation
+
+Big O Notation is a way to describe the performance or complexity of an algorithm, particularly in terms of:
+
+Time Complexity – How the runtime of an algorithm grows as the input size increases.
+
+Space Complexity – How memory usage grows with input size.
+
+It's used to describe the worst-case scenario, helping us understand how an algorithm scales.
+
+![Big O Notation](https://www.bigocheatsheet.com/img/big-o-cheat-sheet-poster.png)
+
+| Big O        | Name          | Example Scenario                                    | Growth        |
+| ------------ | ------------- | --------------------------------------------------- | ------------- |
+| `O(1)`       | Constant time | Accessing array element by index                    | ⚡ Fastest     |
+| `O(log n)`   | Logarithmic   | Binary search                                       | 📉 Efficient  |
+| `O(n)`       | Linear        | Looping through an array                            | ➡️ Steady     |
+| `O(n log n)` | Linearithmic  | Merge sort, quicksort (average case)                | 🔁 Fast Sorts |
+| `O(n²)`      | Quadratic     | Nested loops (e.g., bubble sort)                    | 🐢 Slow       |
+| `O(2ⁿ)`      | Exponential   | Recursive Fibonacci without memoization             | 💣 Explodes   |
+| `O(n!)`      | Factorial     | Brute-force permutations (e.g., traveling salesman) | 🧨 Very Slow  |
+
 ## Classification of the structure
 
 - **Linear data structures**: Store data in a sequential order is allowing for easy insertion and deletion operation. Example: Array, linked list, stack And queues.
 
 - **Non-linear data structure**: These structures store data in a hierarchical, or interconnected manner, this allowing for more complex relationships between data elements. Example: Trees, Graphs and hash tables.
 
-### Example of data structures
+- **Advanced**:
+
+| **Category**         | **Data Structure**              | **Description**                                                                 |
+|----------------------|----------------------------------|----------------------------------------------------------------------------------|
+| **Linear**           | Array                            | Contiguous elements with O(1) access via indices                                 |
+|                      | Linked List (Singly/Doubly)     | Nodes linked by pointers; efficient insert/delete                                |
+|                      | Stack                            | LIFO access (Last-In, First-Out)                                                 |
+|                      | Queue                            | FIFO access (First-In, First-Out)                                                |
+|                      | Deque                            | Double-ended queue with insert/delete at both ends                               |
+| **Non-Linear**       | Tree (General)                   | Hierarchical structure of parent-child nodes                                     |
+|                      | Binary Tree                      | Tree where each node has at most 2 children                                      |
+|                      | Binary Search Tree (BST)         | Binary tree with ordered left < root < right                                     |
+|                      | AVL Tree                         | Height-balanced BST for efficient searching                                      |
+|                      | Red‑Black Tree                   | Self-balancing BST used in libraries and OS                                      |
+|                      | Heap (Min/Max)                   | Binary tree maintaining min/max-heap property                                    |
+|                      | Trie                             | Tree for string prefix storage and lookups                                       |
+|                      | Graph (Adjacency List/Matrix)   | Nodes (vertices) connected by edges, for complex relationships                   |
+| **Hash-Based**       | Hash Table                       | Stores key-value pairs with constant average-time operations                     |
+|                      | Hash Map                         | Hash table implementation supporting object keys                                 |
+|                      | Hashing                          | Technique to map data to fixed-size values for fast access                       |
+| **Mapped Structures**| Map (Dictionary)                 | Stores key-value pairs; can preserve insertion order (in JS: `Map<K, V>`)         |
+| **Grid-Based**       | Matrix                           | 2D array of elements; used in image data, graph adjacency, etc.                  |
+| **Advanced**         | Segment Tree                     | Tree supporting efficient range queries and updates                              |
+|                      | Fenwick Tree (Binary Indexed Tree)| Supports prefix sums efficiently                                                |
+|                      | Disjoint Set (Union-Find)        | Keeps track of elements partitioned into disjoint subsets                        |
+| **Miscellaneous**    | Misc                              | Placeholder for special-purpose or domain-specific structures (e.g., KD-Tree)    |
 
 ## Linear Data structures
 
@@ -152,7 +199,7 @@ Doubly linked list each node has two pointers, one pointer to the next note and 
 
 A circular Linked list is the type of Linked list in which the first and the last note are also connected to each other to form a circle. There is not NULL link.
 
-#### Advanced Data Structure
+## Advanced Data Structure
 
 #### Stack
 
