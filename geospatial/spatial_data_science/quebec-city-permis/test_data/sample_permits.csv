@@ -1,0 +1,4 @@
+NUMERO_PERMIS,DATE_DELIVRANCE,ADRESSE_TRAVAUX,DOMAINE,LOTS_IMPACTES,TYPE_PERMIS,RAISON,ARRONDISSEMENT,LONGITUDE,LATITUDE
+P2023001,2023-01-15,123 Rue Saint-Jean,Construction,Lot 1,Residential,New construction,Ville-Marie,-71.207889,46.815723
+P2023002,2023-02-20,456 Avenue des Érables,Renovation,Lot 2,Commercial,Renovation,Sainte-Foy,-71.208123,46.816234
+P2023003,2023-03-10,789 Boulevard Laurier,Demolition,Lot 3,Industrial,Demolition,Beauport,-71.209456,46.817567

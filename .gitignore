@@ -1,6 +1,3 @@
-# ignore file starting with .env
-.env*
-
 # Ignore file under the file supabase
 supabase/
 
@@ -43,4 +40,9 @@ Temporary Items
 node_modules/
 
 # Environment
+.env
 .env*
+
+# Ignore __pychache__ file and cached python files
+__pycache__/*
+*.pyc

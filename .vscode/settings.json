@@ -3,7 +3,6 @@
     "astype",
     "cartesian",
     "Carto",
-    "creational",
     "Creational",
     "disponibilite",
     "dotenv",
@@ -14,12 +13,11 @@
     "IIFE",
     "kangalou",
     "linestring",
+    "postgis",
     "srid",
-    "supabase",
-    "undoable"
+    "supabase"
   ],
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
-  },
-  "python.formatting.provider": "none"
+  }
 }
