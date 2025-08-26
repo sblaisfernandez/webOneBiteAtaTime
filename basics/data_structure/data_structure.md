@@ -31,27 +31,14 @@ A data structure is a way of organizing and storing data in a computer computer 
 
 ### Example of data structures
 
+## Linear Data structures
+
+Store data in a sequential order is allowing for easy insertion and deletion operation.
+
 - Array
 - Linked List
 - Queue
 - Stack
-
-- Maps (Dictionary)
-- Hash maps
-
-- Binary Tree
-- Binary Search
-- Tree
-- Heap
-- Hashing
-- Graph
-- Matrix
-- Misc
-- Advanced Data Structure
-
-## Linear Data structures
-
-Store data in a sequential order is allowing for easy insertion and deletion operation. Example: Array, linked list, stack And queues.
 
 ### Advantage of linear data structures
 
@@ -77,7 +64,7 @@ Store data in a sequential order is allowing for easy insertion and deletion ope
 
 - **Unsuitable for certains operations**: Linear data structure may not be suitable for operation that require constant Random access to elements, such as searching for an element in a large dataset.
 
-### Array
+#### Array
 
 Array is a collection of element stored in a continuous memory locations. Array data structure can be fixed length or dynamic length. Array use zero base index.
 
@@ -94,7 +81,7 @@ newArray.push("Seb");
 
 It is possible to create a two-dimensional array, also refer as a matrix or a array of array.
 
-### Linked list
+#### Linked list
 
 A linked list is a linear data structure which look like a chain of node where each note contains a data value and a reference link to the next node in the list.
 
@@ -167,7 +154,7 @@ A circular Linked list is the type of Linked list in which the first and the las
 
 #### Advanced Data Structure
 
-### Stack
+#### Stack
 
 A stack is a linear data structure in which only the last inserted element can be removed and access. That follow the last-In-First-Out(LIFO) principle.
 
@@ -175,7 +162,7 @@ Stack is great because it is fast, Since it is now, then the last element is to 
 
 ![Stack](./img/stack.png)
 
-#### Stack Operations
+##### Stack Operations
 
 - **push()**: Element is added on top of the stack.
 - **pop()**: An element is removed from the top of the stack.
@@ -187,16 +174,28 @@ Stack is great because it is fast, Since it is now, then the last element is to 
 
 - **Dynamic size Stack**: A dynamic size that can grow or shrink dynamically. This type of stack is implemented use a link list as it allows for easy resizing of the stack.
 
-### Queue
+#### Queue
 
 A queue is a linear data structure, You can remove only the first added element. That follow the First-In-First-Out (FIFO) principle.
 Queue have linear time operation `O(1)`. Adding to a `enqueuing` push() is call in queueing and removing from the queue is called `dequeuing` or shift().
 
 ## Non-linear data structures
 
-These structures store data in a hierarchical, or interconnected manner, this allowing for more complex relationships between data elements. Example: Trees, Graphs and hash tables.
+These structures store data in a hierarchical, or interconnected manner, this allowing for more complex relationships between data elements.
 
-### Trees
+- Maps (Dictionary)
+- Hash maps
+- Binary Tree
+- Binary Search
+- Tree
+- Heap
+- Hashing
+- Graph
+- Matrix
+- Misc
+- Advanced Data Structure
+
+#### Trees
 
 The three data structure is composed of nodes. The first/top node that do not have any parent node is called the `root node`, The other nodes are called `children nodes`.
 

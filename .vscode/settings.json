@@ -1,23 +1,25 @@
 {
-    "cSpell.words": [
-        "astype",
-        "cartesian",
-        "Carto",
-        "Creational",
-        "disponibilite",
-        "dotenv",
-        "elif",
-        "EWKT",
-        "geometrie",
-        "Geospatial",
-        "IIFE",
-        "kangalou",
-        "linestring",
-        "srid",
-        "supabase"
-    ],
-    "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
-    },
-    "python.formatting.provider": "none"
+  "cSpell.words": [
+    "astype",
+    "cartesian",
+    "Carto",
+    "creational",
+    "Creational",
+    "disponibilite",
+    "dotenv",
+    "elif",
+    "EWKT",
+    "geometrie",
+    "Geospatial",
+    "IIFE",
+    "kangalou",
+    "linestring",
+    "srid",
+    "supabase",
+    "undoable"
+  ],
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "python.formatting.provider": "none"
 }
