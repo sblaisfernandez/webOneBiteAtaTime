@@ -6,15 +6,10 @@ from folium import Map
 from io import StringIO
 from shapely.geometry import Point
 from supabase import create_client, Client
-import folium
 import geopandas as gpd
-import os
 import pandas as pd
 import requests
 import shapely
-import shapely.wkb
-import shapely.wkt
-import uuid
 
 load_dotenv(dotenv_path="/Users/blais/nplus1/webOneBiteAtaTime/.env")
 # Constants
