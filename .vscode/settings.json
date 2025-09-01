@@ -19,11 +19,15 @@
     "multiband",
     "MULTILINESTRING",
     "MULTIPOLYGON",
+    "PERIMETRE",
     "postgis",
     "srid",
     "supabase"
   ],
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
-  }
+  },
+  "python-envs.defaultEnvManager": "ms-python.python:conda",
+  "python-envs.defaultPackageManager": "ms-python.python:conda",
+  "python-envs.pythonProjects": []
 }
