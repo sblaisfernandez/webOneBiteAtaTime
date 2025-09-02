@@ -13,41 +13,60 @@ from supabase import create_client, Client
 import geopandas as gpd
 import pandas as pd
 import requests
+from types import SimpleNamespace
 
 # Constants
-adminBoundariesUrl = 'https://diffusion.mern.gouv.qc.ca/Diffusion/RGQ/Vectoriel/Theme/Local/SDA_20k/FGDB/SDA.gdb.zip'
-dataFolderRelativePath = './data'
-
-if os.path.exists(dataFolderRelativePath + '/SDA.gdb'):
-    # layers = fiona.listlayers(dataFolderRelativePath + '/SDA.gdb')
-    print("Reading layers from local folder:", dataFolderRelativePath + '/SDA.gdb')
+# dataFolderRelativePath =
+destination = SimpleNamespace(
+    dataFolderRelativePath="./data",
+    path= './data/SDA.gdb'
+)
+source = SimpleNamespace(
+    url="https://diffusion.mern.gouv.qc.ca/Diffusion/RGQ/Vectoriel/Theme/Local/SDA_20k/FGDB/SDA.gdb.zip",
+    updatedAt="2021-04-15T08:03:00+00:00",
+    format=".zip",
+    layer= "regio_s",
+    epsg= "EPSG:4326",
+    columns_of_interest = ["RES_CO_REG", "RES_NM_REG", "geometry"]
+)
+target = SimpleNamespace(
+    wantedRegion="Capitale-Nationale",
+    columns=[]
+)
+target_columns_name = {
+    "RES_CO_REG": "region_id",
+    "RES_NM_REG": "name",
+    "geometry": "geom",
+}
+# %%
+if os.path.exists(destination.path):
+    print("Reading layers from local folder:", destination.path)
 else:
     print("Fetching layers from remote URL")
-    response = requests.get(adminBoundariesUrl)
+    response = requests.get(source.url)
     response.raise_for_status()
     zip_file = zipfile.ZipFile(io.BytesIO(response.content))
-    zip_file.extractall(path=dataFolderRelativePath)
+    zip_file.extractall(path=destination.dataFolderRelativePath)
 
-path = dataFolderRelativePath + '/SDA.gdb'
-layers = fiona.listlayers(path)
-administrativeRegions = gpd.read_file(path, layer='regio_s')
+layers = fiona.listlayers(destination.path)
+administrativeRegions = gpd.read_file(destination.path, layer=source.layer)
+administrativeRegions = administrativeRegions.to_crs(source.epsg)
 
-capitalNationale = administrativeRegions[administrativeRegions['RES_NM_REG'] == 'Capitale-Nationale']
-capitalNationale = capitalNationale.to_crs('EPSG:4326')
+capitalNationale = administrativeRegions[
+    administrativeRegions["RES_NM_REG"] == target.wantedRegion
+]
+administrativeRegions = administrativeRegions[source.columns_of_interest]
+administrativeRegions = administrativeRegions.rename(columns=target_columns_name)
+administrativeRegions["updated_at"] = source.updatedAt
 
 # %%
-columns_of_interest = ['RES_CO_REG', 'RES_NM_REG', 'geometry']
-administrativeRegions = administrativeRegions[columns_of_interest]
-# Rename columns to match the database schema
-administrativeRegions = administrativeRegions.rename(columns={
-    'RES_CO_REG': 'id',
-    'RES_NM_REG': 'name',
-    'geometry': 'geom'
-})
-# Add a column 'is_valid_geom' if the column 'geometry' is valid
+# Add a column 'is_valid_geom' if the column 'geom' is valid
 validation = pd.DataFrame()
-validation['is_valid_geom'] = administrativeRegions['geometry'].apply(lambda geom: geom.is_valid)
+validation["is_valid_geom"] = administrativeRegions["geom"].apply(
+    lambda geom: geom.is_valid
+)
 
 # %%
 administrativeRegions.to_csv("./data/administrative_regions.csv", index=False)
+
 # %%
