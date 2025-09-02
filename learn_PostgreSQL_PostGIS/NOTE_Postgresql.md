@@ -8,6 +8,9 @@ This is a collection of the most common commands I run while administering Postg
 docker pull postgres
 docker run --platform linux/arm64 postgres
 docker run --name mypostgres -p 5433:5433 -e POSTGRES_USER=mypostgres -e POSTGRES_PASSWORD=mypostgres -d postgres
+
+docker run -it --link mypostgres:postgres --rm postgres \
+    sh -c 'exec psql -h "$POSTGRES_PORT_5432_TCP_ADDR" -p "$POSTGRES_PORT_5432_TCP_PORT" -U postgres'
 ```
 
 docker volume create my-postgis-volume
@@ -20,6 +23,25 @@ docker run --name mypostgis -p 5432:5432 -e POSTGRES_USER=mypostgis -e POSTGRES_
 docker run -it --link mypostgis:postgres --rm postgres \
     sh -c 'exec psql -h "$POSTGRES_PORT_5432_TCP_ADDR" -p "$POSTGRES_PORT_5432_TCP_PORT" -U mypostgis'
 ```
+
+### Recon database
+
+Here’s the recon section condensed into a markdown table:
+
+| Task | Command | Type | Notes |
+|------|---------|------|-------|
+| Show server version | `SHOW SERVER_VERSION;` | SQL | Returns server version setting (similar to `SELECT version();` for full string). |
+| Show connection info | `\conninfo` | psql meta | Current host, port, user, db, SSL. |
+| Show all config parameters | `SHOW ALL;` | SQL | Full list of GUC settings. Filter with `WHERE name LIKE 'log_%';` if needed. |
+| List roles (users) | `SELECT rolname FROM pg_roles;` | SQL | For details: `\du+` in psql. |
+| Show current user | `SELECT current_user;` | SQL | Role after any `SET ROLE`. |
+| List roles & attributes | `\du` | psql meta | Shows privileges, role flags (superuser, login, etc.). |
+| List databases | `\l` | psql meta | Same as `\list`; includes owner, encoding, collation. |
+| Show current database | `SELECT current_database();` | SQL | Database name for current session. |
+| List tables (search_path schemas) | `\dt` | psql meta | Add schema: `\dt public.*` or all: `\dt *.*`. |
+| List functions (schema) | `\df <schema>` | psql meta | Use `\df+` for more details; omit schema to list all in path. |
+| Connect to database | `\c <database_name>` | psql meta | Can also specify user: `\c db user`. |
+| Create database | `CREATE DATABASE <database_name> WITH OWNER <username>;` | SQL | Add options: `ENCODING 'UTF8' TEMPLATE template0`. |
 
 ## Data Types
 
@@ -131,13 +153,7 @@ Commun words used to name DB columns `created_at`, `updated_at`, `source_id`, `d
 - Reduce Redundant Data: Normalization
 
 ```sql
-CREATE TYPE dimensions AS (
-        width INTEGER,
-        height INTEGER,
-        depth INTEGER
-    );
-
-ALTER TABLE customers ALTER COLUMN sec type sex_type using sex:: sex_type;
+CREATE TYPE sex_type AS ennum ('M', 'F')
 
 create table customers (
     first_name text NOT null,
@@ -150,100 +166,10 @@ create table customers (
     zip smallint not null,
     phone varchar(20) not null,
     birth_date Date null,
-    sex char(1) not null,
+    sex sex_type not null,
     created_at date not null,
     id serial primary key
 )
-```
-
-## Recon
-
-Show version
-
-```sql
-SHOW SERVER_VERSION;
-```
-
-Show system status
-
-```sql
-\conninfo
-```
-
-Show environmental variables
-
-```sql
-SHOW ALL;
-```
-
-List users
-
-```sql
-SELECT rolname FROM pg_roles;
-```
-
-Show current user
-
-```sql
-SELECT current_user;
-```
-
-Show current user's permissions
-
-```sql
-\du
-```
-
-List databases
-
-```sql
-\l
-```
-
-Show current database
-
-```sql
-SELECT current_database();
-```
-
-Show all tables in database
-
-```sql
-\dt
-```
-
-List functions
-
-```sql
-\df <schema>
-```
-
-## Databases
-
-List databasees
-
-```sql
-\l
-```
-
-Connect to database
-
-```sql
-\c <database_name>
-```
-
-S current database
-
-```sql
-SELECT current_database();
-```
-
-Create database
-
-<http://www.postgresql.org/docs/current/static/sql-createdatabase.html>
-
-```sql
-CREATE DATABASE <database_name> WITH OWNER <username>;
 ```
 
 ##### delete database
