@@ -11,8 +11,9 @@ import pandas as pd
 import requests
 import shapely
 
-# load_dotenv(dotenv_path="/Users/blais/nplus1/webOneBiteAtaTime/.env")
 # Constants
+adminBoundariesUrl = 'https://diffusion.mern.gouv.qc.ca/Diffusion/RGQ/Vectoriel/Theme/Local/SDA_20k/FGDB/SDA.gdb.zip'
+
 source = {
     "Url": "https://geoegl.msp.gouv.qc.ca/apis/wss/incendie.fcgi?service=wfs&version=1.1.0&request=getfeature&typename=MSP_CASERNE_PUBLIC&outputformat=CSV",
     format: "csv",
@@ -33,6 +34,25 @@ target = {
         "GEOMETRIE": "geometry",
     },
 }
+
+
+# %%
+response = requests.get(adminBoundariesUrl)
+response.raise_for_status()
+zip_file = zipfile.ZipFile(io.BytesIO(response.content))
+zip_file.extractall(path=dataFolderRelativePath)
+
+# %%
+path = dataFolderRelativePath + '/SDA.gdb'
+layers = fiona.listlayers(path)
+administrativeRegions = gpd.read_file(path, layer='regio_s')
+
+# %%
+capitalNationale = administrativeRegions[administrativeRegions['RES_NM_REG'] == 'Capitale-Nationale']
+capitalNationale = capitalNationale.to_crs('EPSG:4326')
+capitalNationale
+
+
 
 
 # %%
