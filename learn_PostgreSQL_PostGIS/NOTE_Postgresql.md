@@ -109,3 +109,9 @@ Avoid ambiguity for name table and columns like  `temperature` vs `temperature_c
 When possible, name foreign key columns the same as the columns they refer to.
 
 Commun words used to name DB columns `created_at`, `updated_at`, `source_id`, `destination_id`.
+
+### Queries
+
+```sql
+SELECT columns_name FROM table_names;
+```

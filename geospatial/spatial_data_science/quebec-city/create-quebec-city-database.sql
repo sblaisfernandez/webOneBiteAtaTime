@@ -30,8 +30,7 @@ create table public.administratif_regions (
   region_id bigint not null,
   name text null,
   updated_at timestamp with time zone not null default now(),
-  geom geometry null,
-  constraint administratif_regions_pkey primary key (region_id)
+  geom geometry null
 ) TABLESPACE pg_default;
 
 
