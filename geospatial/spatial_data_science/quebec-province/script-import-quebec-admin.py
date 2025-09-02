@@ -68,5 +68,3 @@ validation["is_valid_geom"] = administrativeRegions["geom"].apply(
 
 # %%
 administrativeRegions.to_csv("./data/administrative_regions.csv", index=False)
-
-# %%
