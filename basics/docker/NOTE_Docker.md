@@ -149,17 +149,3 @@ password: pwd
 ```
 
 Make sure postGIS is installed.
-
----
-
-```bash
-
-```
-
----
-
-# Postgresql Cheatsheet
-
-```sql
-\c <db_name> --return db name
-```
