@@ -13,6 +13,8 @@ import shapely
 
 load_dotenv(dotenv_path="/Users/blais/nplus1/webOneBiteAtaTime/.env")
 # Constants
+adminBoundariesUrl = 'https://diffusion.mern.gouv.qc.ca/Diffusion/RGQ/Vectoriel/Theme/Local/SDA_20k/FGDB/SDA.gdb.zip'
+
 source = {
     "Url": "https://www.donneesquebec.ca/recherche/dataset/a56dfef1-ad07-4b21-9ef7-24a0c553a085/resource/36afc3b9-a6d5-447f-93fa-443f44e94b7c/download/vdq-zonagemunicipalzones.csv",
     format: "csv",
