@@ -22,6 +22,13 @@ supabase link
 cd <project-folder>
 
 supabase init # Will add supabase/config.toml
+supabase link
+
+supabase migration list
+supabase migration fetch
+supabase db pull
+
+supabase migration new create_building_tables
 ```
 
 ## Migration workflow first call

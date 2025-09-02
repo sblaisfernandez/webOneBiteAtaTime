@@ -73,3 +73,39 @@ docker run --name my-postgis-container -e POSTGRES_PASSWORD=password -d postgis/
 ## Learn PostgreSQL
 
 - [Course](https://www.youtube.com/watch?v=SpfIwlAYaKk)
+
+## PostgreSQL Style Guide
+
+- [postgres-sql-review-guide](https://www.bytebase.com/blog/postgres-sql-review-guide/)
+
+### PostgreSQL reserved words
+
+```sql
+SELECT, INSERT, UPDATE, DELETE, FROM, WHERE, AND, OR, JOIN, CREATE, ALTER, DROP, TABLE, COLUMN, CONSTRAINT, PRIMARY, FOREIGN, KEY, NULL, TRUE, FALSE, CASE, WHEN, THEN, ELSE, END, AS, DISTINCT, GROUP, ORDER, BY, HAVING, IN, EXISTS, UNION, ALL, ANY, SOME, BETWEEN, LIKE, IS, NOT, LIMIT, OFFSET, CAST, COALESCE, EXTRACT.
+
+ABORT, ANALYZE, BINARY, CLUSTER, COPY, DO, EXPLAIN, LISTEN, LOAD, LOCK, MOVE, NOTIFY, RESET, SETOF, SHOW, UNLISTEN, UNTIL, VACUUM, VERBOSE.
+```
+
+### Naming tables and columns best practices
+
+Use only english, don't use special characters like ä,é, etc.
+
+Only use lowercase for naming, because SQL is case-insensitive.
+
+Good practice: SQL keywords: UPPER CASE
+
+When creating identifiers (names of databases, tables, columns, etc) use `underscore_name`.
+
+**Postgresql treats identifiers case insensitively when not quoted (it actually folds them to lowercase internally), and case sensitively when quoted; many people are not aware of this idiosyncrasy. **
+
+Use plural name like `users`, `audits`. That will avoid collision with reserve words.
+
+*PostGIS* use `geom` as geometry column name to avoid  confusion whith the data type `geometry.`
+
+Use spell out id fields for ID column like `user_id`, `contact_id`.
+
+Avoid ambiguity for name table and columns like  `temperature` vs `temperature_celsius`.
+
+When possible, name foreign key columns the same as the columns they refer to.
+
+Commun words used to name DB columns `created_at`, `updated_at`, `source_id`, `destination_id`.
