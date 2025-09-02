@@ -5,20 +5,27 @@ This is a collection of the most common commands I run while administering Postg
 ## Install in Docker for macOS
 
 ```bash
-docker pull postgis/postgis
-
-docker run --platform linux/arm64 postgis/postgis
+docker pull postgres
+docker run --platform linux/arm64 postgres
+docker run --name mypostgres -p 5433:5433 -e POSTGRES_USER=mypostgres -e POSTGRES_PASSWORD=mypostgres -d postgres
+```
 
 docker volume create my-postgis-volume
 
-docker run --name my-postgis-container -e POSTGRES_PASSWORD=password -d postgis/postgis
+```bash
+docker pull mdillon/postgis
+docker run --platform linux/arm64 mdillon/postgis
+docker run --name mypostgis -p 5432:5432 -e POSTGRES_USER=mypostgis -e POSTGRES_PASSWORD=mypostgis -d mdillon/postgis
+
+docker run -it --link mypostgis:postgres --rm postgres \
+    sh -c 'exec psql -h "$POSTGRES_PORT_5432_TCP_ADDR" -p "$POSTGRES_PORT_5432_TCP_PORT" -U mypostgis'
 ```
 
 ## Data Types
 
 | Category        | Name                      | SQL Symbol                         | Aliases                                   | Description                                | Example                                  |
 |----------------|---------------------------|-------------------------------------|-------------------------------------------|--------------------------------------------|-------------------------------------------|
-| **Numeric**     | smallint                  | `smallint`                          | `int2`                                     | 2‑byte signed integer                       | `-32768`                                  |
+| **Numeric**     | smallint                  | `smallint`                          | `int2`                                     | 2‑byte signed integer                       | `-32768` to `32768`                    |
 |                | integer                   | `integer`                           | `int`, `int4`                              | 4‑byte signed integer                       | `42`                                      |
 |                | bigint                    | `bigint`                            | `int8`                                     | 8‑byte signed integer                       | `9223372036854775807`                     |
 |                | decimal / numeric         | `decimal(p,s)` / `numeric(p,s)`     | —                                         | Exact numeric with precision/scale         | `numeric(10,2)`                           |
@@ -74,6 +81,8 @@ docker run --name my-postgis-container -e POSTGRES_PASSWORD=password -d postgis/
 
 # Relational Database (RDBMS)
 
+- [Derek Banas Master postgresl](https://www.youtube.com/watch?v=85pG_pDkITY)
+
 - [SQL course](https://www.freecodecamp.org/news/learn-sql-free-relational-database-courses-for-beginners/)
 - [Coursera Introduction to relational Databases](https://www.coursera.org/learn/introduction-to-relational-databases#modules)
 - [Course](https://www.youtube.com/watch?v=SpfIwlAYaKk)
@@ -96,33 +105,55 @@ Use only english, don't use special characters like ä,é, etc.
 
 Only use lowercase for naming, because SQL is case-insensitive.
 
-Good practice: SQL keywords: UPPER CASE
+*Good practice*: SQL keywords: UPPER CASE
 
 When creating identifiers (names of databases, tables, columns, etc) use `underscore_name`.
 
-**Postgresql treats identifiers case insensitively when not quoted (it actually folds them to lowercase internally), and case sensitively when quoted; many people are not aware of this idiosyncrasy.**
+**PostgresSQL treats identifiers case insensitively when not quoted (it actually folds them to lowercase internally), and case sensitively when quoted; many people are not aware of this idiosyncrasy.**
 
-Use plural name like `users`, `audits`. That will avoid collision with reserve words.
+Use plural name like `users`, `audits` for table name, that will avoid collision with reserve words.
 
-*PostGIS* use `geom` as geometry column name to avoid  confusion whith the data type `geometry.`
+*PostGIS* use `geom` as geometry column name to avoid confusion with the data type `geometry.`
 
 Use spell out id fields for ID column like `user_id`, `contact_id`.
 
-Avoid ambiguity for name table and columns like  `temperature` vs `temperature_celsius`.
+Avoid ambiguity for name table and columns like `temperature` vs `temperature_celsius`.
 
 When possible, name foreign key columns the same as the columns they refer to.
 
 Commun words used to name DB columns `created_at`, `updated_at`, `source_id`, `destination_id`.
 
-### Queries
+### Derek Banas notes Design a Database
+
+- 1 Table represent 1 Real World Object: `Customers`, `Orders`, `Products`, `sales_orders`
+- Columns Store 1 Piece of Information: `customers_id`, `name`, `order_id`, `product_id`
+- How to table relate to each other: `foreign_key`
+- Reduce Redundant Data: Normalization
 
 ```sql
-show DATABASES;
+CREATE TYPE dimensions AS (
+        width INTEGER,
+        height INTEGER,
+        depth INTEGER
+    );
 
-```
+ALTER TABLE customers ALTER COLUMN sec type sex_type using sex:: sex_type;
 
-```sql
-SELECT columns_name FROM table_names;
+create table customers (
+    first_name text NOT null,
+    last_name text NOT NULL,
+    email text not null,
+    company text,
+    street text not null,
+    city text not null,
+    state text not null,
+    zip smallint not null,
+    phone varchar(20) not null,
+    birth_date Date null,
+    sex char(1) not null,
+    created_at date not null,
+    id serial primary key
+)
 ```
 
 ## Recon
@@ -451,6 +482,7 @@ VALUES ( <value1>,<value2> );
 
 ```sql
 SELECT * FROM <table_name>;
+SELECT columns_name FROM table_names;
 ```
 
 ##### read one row of data

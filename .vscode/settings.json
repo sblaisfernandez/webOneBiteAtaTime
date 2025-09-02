@@ -1,6 +1,7 @@
 {
   "cSpell.words": [
     "astype",
+    "Banas",
     "cartesian",
     "Carto",
     "Creational",
@@ -17,11 +18,13 @@
     "linestring",
     "linux",
     "listlayers",
+    "mdillon",
     "multiband",
     "MULTILINESTRING",
     "MULTIPOLYGON",
     "PERIMETRE",
     "postgis",
+    "postgres",
     "srid",
     "supabase"
   ],
