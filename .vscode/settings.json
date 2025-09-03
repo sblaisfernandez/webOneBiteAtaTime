@@ -23,6 +23,7 @@
     "multiband",
     "MULTILINESTRING",
     "MULTIPOLYGON",
+    "nullable",
     "PERIMETRE",
     "pgloader",
     "postgis",

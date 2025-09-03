@@ -2,6 +2,7 @@
 from datetime import datetime
 import os
 from wsgiref import headers
+import numpy as np
 from pydantic_core import Url
 from dotenv import find_dotenv, load_dotenv
 from folium import Map
@@ -75,6 +76,7 @@ def generate_address(df: pd.DataFrame):
 def reorder_columns(df: pd.DataFrame, columns: list = []):
     return df[columns]
 
+
 def valid_geom(gpd: gpd.GeoDataFrame, columnName="geom"):
     """
     Default value of columnName is 'geom'.
@@ -85,7 +87,14 @@ def valid_geom(gpd: gpd.GeoDataFrame, columnName="geom"):
     else:
         print("At least one geom are not valid")
 
+# %%
+def convert_column_to_int_nullable(df, col):
+    s = pd.to_numeric(df[col], errors="coerce")  # strings -> numeric, bad -> NaN
+    s = s.replace([np.inf, -np.inf], pd.NA)  # infinities -> NA
+    df[col] = s.astype("Int64")  # pandas nullable int
+    return df
 
+# %%
 # Constants
 load_dotenv(dotenv_path="/Users/blais/nplus1/webOneBiteAtaTime/.env")
 GOOGLE_MAP_KEY = os.getenv("GOOGLE_MAP_KEY")
@@ -130,8 +139,6 @@ target = SimpleNamespace(
 )
 
 # %%
-
-# %%
 if os.path.exists(target.filename):
     rawDataframe = pd.read_csv(target.filename, dtype=str)
 else:
@@ -169,6 +176,7 @@ else:
 # %%
 newGeoDataframe["updated_at"] = source.updated_at
 newGeoDataframe = newGeoDataframe[target.finalColumns]
+convert_column_to_int_nullable(newGeoDataframe, "population")
 valid_geom(newGeoDataframe)
 
 # %%
