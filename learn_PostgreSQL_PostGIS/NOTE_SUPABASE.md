@@ -76,3 +76,28 @@ supabase migration list ## Sync of the migration locally and remote
 ## [Seeding](https://supabase.com/docs/guides/local-development/seeding-your-database)
 
 add file `supabase/seed.sql`
+
+## Import data into a supabase
+
+- [Import data into supabase](https://supabase.com/docs/guides/database/import-data)
+
+### Upload a .csv file by the interface *Table Editor
+
+*I experiment slow import type and icomplete import*
+
+
+## Use DBeaver postgreSQL client
+
+To create a table from SQL script and import data from csv format.
+
+*I experiment fast import with a csv file of 6 columns with geom and 66 rows*
+
+### Bulk import using pgloader
+
+Installing pgloader on macOS
+
+```bash
+brew update
+brew install pgloader
+pgloader --version
+```

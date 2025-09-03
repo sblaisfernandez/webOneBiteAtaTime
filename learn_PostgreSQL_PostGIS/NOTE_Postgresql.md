@@ -136,7 +136,7 @@ Use plural name like `users`, `audits` for table name, that will avoid collision
 
 Use spell out id fields for ID column like `user_id`, `contact_id`.
 
-Avoid ambiguity for name table and columns like `temperature` vs `temperature_celsius`.
+Avoid ambiguity for name table and columns like `temperatures` vs `temperatures_celsius`.
 
 When possible, name foreign key columns the same as the columns they refer to.
 

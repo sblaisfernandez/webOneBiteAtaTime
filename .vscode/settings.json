@@ -23,6 +23,7 @@
     "MULTILINESTRING",
     "MULTIPOLYGON",
     "PERIMETRE",
+    "pgloader",
     "postgis",
     "postgres",
     "sjoin",
