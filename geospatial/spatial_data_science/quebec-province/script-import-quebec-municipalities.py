@@ -75,6 +75,16 @@ def generate_address(df: pd.DataFrame):
 def reorder_columns(df: pd.DataFrame, columns: list = []):
     return df[columns]
 
+def valid_geom(gpd: gpd.GeoDataFrame, columnName="geom"):
+    """
+    Default value of columnName is 'geom'.
+    """
+    # PPrint "All geom are valid " if all geom are valid
+    if gpd[columnName].is_valid.all():
+        print("All geom are valid")
+    else:
+        print("At least one geom are not valid")
+
 
 # Constants
 load_dotenv(dotenv_path="/Users/blais/nplus1/webOneBiteAtaTime/.env")
@@ -114,10 +124,12 @@ target = SimpleNamespace(
         "email",
         "website",
         "population",
-        'updated_at',
-        'geom'
+        "updated_at",
+        "geom",
     ],
 )
+
+# %%
 
 # %%
 if os.path.exists(target.filename):
@@ -157,6 +169,7 @@ else:
 # %%
 newGeoDataframe["updated_at"] = source.updated_at
 newGeoDataframe = newGeoDataframe[target.finalColumns]
+valid_geom(newGeoDataframe)
 
 # %%
 newGeoDataframe.to_csv(target.filename, index=False)
