@@ -134,7 +134,7 @@ target = SimpleNamespace(
         "website",
         "population",
         "updated_at",
-        "geom",
+        "city_hall_location",
     ],
 )
 
@@ -169,7 +169,7 @@ newDataframe = reorder_columns(
 if os.path.exists(target.filename):
     newGeoDataframe = gpd.read_file(target.filename)
 else:
-    newGeoDataframe = gpd.GeoDataFrame(newDataframe, geometry="geom", crs="EPSG:4326")
+    newGeoDataframe = gpd.GeoDataFrame(newDataframe, geometry="city_hall_location", crs="EPSG:4326")
     # newGeoDataframe = run_gmaps_geocoding(newDataframe)
     newGeoDataframe.to_csv(target.filename, index=False)
 
