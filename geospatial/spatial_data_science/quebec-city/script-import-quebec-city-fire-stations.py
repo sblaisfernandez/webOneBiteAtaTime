@@ -74,6 +74,8 @@ newGeoDataFrame = gpd.GeoDataFrame(newDataframe, geometry="geom", crs=crs)
 fireStationsInCapital = gpd.sjoin(newGeoDataFrame, capitalGeoDataFrame, how="inner", predicate="within")
 # select column 'id_caserne', 'no_caserne', 'adresse', 'nom_ssi', 'updated_at_left', 'geom'
 fireStationsInCapital = fireStationsInCapital[['id_caserne', 'no_caserne', 'adresse', 'nom_ssi', 'updated_at_left', 'geom']]
+# Rename columns
+fireStationsInCapital.columns = ['fire_station_id', 'fire_station_no', 'address', 'fire_service_names', 'updated_at', 'geom']
 
 # %%
 # plot fireStationCapital on a map
