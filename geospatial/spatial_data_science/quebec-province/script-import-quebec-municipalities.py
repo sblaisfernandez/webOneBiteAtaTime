@@ -1,4 +1,5 @@
 # %%
+from datetime import datetime
 import os
 from wsgiref import headers
 from pydantic_core import Url
@@ -14,16 +15,65 @@ import requests
 from types import SimpleNamespace
 import googlemaps
 
+
 # Functions
 def geocode_address(address, gmaps_client, precision=0.0000001):
     geocode_response = gmaps_client.geocode(address)
     if geocode_response:
-        location = geocode_response[0]['geometry']['location']
-        point = Point(location['lng'], location['lat'])
+        location = geocode_response[0]["geometry"]["location"]
+        point = Point(location["lng"], location["lat"])
         point = set_precision(point, precision)
         return point
     else:
         return None
+
+
+def run_gmaps_geocoding(df: pd.DataFrame):
+    try:
+        gmaps = googlemaps.Client(key=GOOGLE_MAP_KEY)
+        print("Google Maps client initialized.")
+    except Exception as e:
+        print("Error initializing Google Maps client:", e)
+        return df
+
+    print("Geocoding started at:", datetime.now())
+    df["geom"] = df["address"].apply(lambda row: geocode_address(row, gmaps))
+    print("Geocoding ended at:", datetime.now())
+    return df
+
+
+def rename_columns(df: pd.DataFrame):
+    columns_mapping = {
+        "mcode": "municipality_code",
+        "munnom": "municipality_name",
+        "madr1": "street",
+        "madr2": "city",
+        "mcodpos": "postal_code",
+        "mcourriel": "email",
+        "mweb": "website",
+        "mtel": "phone",
+        "mpopul": "population",
+    }
+    return df.rename(columns=columns_mapping)
+
+
+def generate_address(df: pd.DataFrame):
+    df["province_code"] = "QC"
+    df["country"] = "Canada"
+    df["address"] = (
+        df["street"]
+        + ", "
+        + df["city"]
+        + ", "
+        + df["province_code"]
+        + ", "
+        + df["country"]
+    )
+    return df
+
+
+def reorder_columns(df: pd.DataFrame, columns: list = []):
+    return df[columns]
 
 
 # Constants
@@ -33,16 +83,43 @@ GOOGLE_MAP_KEY = os.getenv("GOOGLE_MAP_KEY")
 destination = SimpleNamespace(dataFolderRelativePath="./data", path="./data/SDA.gdb")
 source = SimpleNamespace(
     url="https://donneesouvertes.affmunqc.net/repertoire/MUN.csv",
-    updatedAt="2025-09-03 07:00:00",
+    updated_at="2025-09-03 07:00:00",
     format=".csv",
     epsg="EPSG:4326",
-    metadata_url= "https://www.donneesquebec.ca/recherche/dataset/repertoire-des-municipalites-du-quebec/resource/19385b4e-5503-4330-9e59-f998f5918363",
+    metadata_url="https://www.donneesquebec.ca/recherche/dataset/repertoire-des-municipalites-du-quebec/resource/19385b4e-5503-4330-9e59-f998f5918363",
     columns_of_interest=["RES_CO_REG", "RES_NM_REG", "geometry"],
 )
 target = SimpleNamespace(
-    columns=[], precision=0.0000001, filename="./data/quebec-municipalities-raw.csv"
+    columns=[],
+    precision=0.0000001,
+    filename="./data/quebec-municipalities-geocoded.csv",
+    wantedColumns=[
+        "mcode",
+        "munnom",
+        "madr1",
+        "madr2",
+        "mcodpos",
+        "mcourriel",
+        "mweb",
+        "mtel",
+        "mpopul",
+    ],
+    finalColumns=[
+        "municipality_code",
+        "municipality_name",
+        "address",
+        "city",
+        "postal_code",
+        "phone",
+        "email",
+        "website",
+        "population",
+        'updated_at',
+        'geom'
+    ],
 )
 
+# %%
 if os.path.exists(target.filename):
     rawDataframe = pd.read_csv(target.filename, dtype=str)
 else:
@@ -51,55 +128,35 @@ else:
     rawDataframe = pd.read_csv(StringIO(response.text), encoding="utf-8")
     rawDataframe.to_csv(target.filename, index=False)
 
-wantedColumns = ['mcode', 'munnom', 'madr1', 'madr2', 'mcodpos', 'mcourriel', 'mweb', 'mtel','mpopul']
-newDataframe = rawDataframe[wantedColumns]
-newDataframe = newDataframe.rename(columns={
-    "mcode": "municipality_code",
-    "munnom": "municipality_name",
-    "madr1": "street",
-    "madr2": "city",
-    "mcodpos": "postal_code",
-    "mcourriel": "email",
-    "mweb": "website",
-    "mtel": "phone",
-    "mpopul": "population"
-})
-# Selection only the row that have a define value at the column 'street'
-newDataframe = newDataframe[newDataframe['street'].notna()]
-newDataframe['province_code'] = 'QC'
-newDataframe['country'] = 'Canada'
-newDataframe['address'] = newDataframe['street'] + ', ' + newDataframe['city'] + ', ' + newDataframe['province_code'] + ', ' + newDataframe['country']
-# Reorder columns
-newDataframe = newDataframe[[
-    "municipality_code",
-    "municipality_name",
-    "address",
-    "city",
-    "postal_code",
-    "phone",
-    "email",
-    "website",
-    "population"
-]]
+# %%
+newDataframe = rawDataframe[target.wantedColumns]
+newDataframe = rename_columns(newDataframe)
+newDataframe = newDataframe[newDataframe["street"].notna()]
+newDataframe = reorder_columns(
+    [
+        "municipality_code",
+        "municipality_name",
+        "address",
+        "city",
+        "postal_code",
+        "phone",
+        "email",
+        "website",
+        "population",
+    ]
+)
 
 # %%
-# gmaps = googlemaps.Client(key=GOOGLE_MAP_KEY)
-# geocode_response = gmaps.geocode('56, rue Martel, Chambly, QC, Canada')
-# location = geocode_response[0]['geometry']['location'] if geocode_response else None
-# # Generate a valid Geopandas geometry value from location
-# point = Point(location['lng'], location['lat'])
-# point = set_precision(point, target.precision)
-
-
-# %%
-# map over each address in the newDataframe
-newDataframe['geom'] = newDataframe['address'].apply(lambda row: geocode_address(row, gmaps))
+if os.path.exists(target.filename):
+    newGeoDataframe = gpd.read_file(target.filename)
+else:
+    newGeoDataframe = gpd.GeoDataFrame(newDataframe, geometry="geom", crs="EPSG:4326")
+    # newGeoDataframe = run_gmaps_geocoding(newDataframe)
+    newGeoDataframe.to_csv(target.filename, index=False)
 
 # %%
-# Convert newDataframe to a GeoDataframe
-newGeoDataframe = gpd.GeoDataFrame(newDataframe, geometry='geom', crs="EPSG:4326")
-# export newDataframe to a .csv
-newGeoDataframe.to_csv("./data/quebec-municipalities-geocoded.csv")
+newGeoDataframe["updated_at"] = source.updated_at
+newGeoDataframe = newGeoDataframe[target.finalColumns]
 
 # %%
-newGeoDataframe.plot()
+newGeoDataframe.to_csv(target.filename, index=False)

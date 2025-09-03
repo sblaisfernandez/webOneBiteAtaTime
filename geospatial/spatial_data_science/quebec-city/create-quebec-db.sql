@@ -43,4 +43,15 @@ create table public.fire_stations (
   constraint fire_stations_pkey primary key (fire_station_id)
 ) TABLESPACE pg_default;
 
+
+create table public.municipalities (
+  municipality_code integer as identity not null,
+  municipality_name text null,
+  area real null,
+  perimeter real null,
+  updated_at timestamp with time zone not null default now(),
+  geom geometry null,
+  constraint municipalities_pkey primary key (municipality_code)
+) TABLESPACE pg_default;
+
 delete from public.zoning;
