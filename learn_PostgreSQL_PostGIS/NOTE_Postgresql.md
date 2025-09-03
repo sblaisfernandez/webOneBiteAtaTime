@@ -166,170 +166,64 @@ Commun words used to name DB columns `created_at`, `updated_at`, `source_id`, `d
 
 ## Permissions
 
+Privilege and role operations:
+
+| Task | Command | Scope | Notes |
+|------|---------|-------|-------|
+| Become postgres OS user (interactive) | `sudo su - postgres && psql` | OS / session | Needed to issue superuser-level grants when your current role lacks rights. |
+| Grant ALL on database | `GRANT ALL PRIVILEGES ON DATABASE <db_name> TO <user_name>;` | Database | Broad privileges; prefer least privilege principle. |
+| Grant CONNECT on database | `GRANT CONNECT ON DATABASE <db_name> TO <user_name>;` | Database | Needed before schema/table access if revoked previously. |
+| Grant USAGE on schema | `GRANT USAGE ON SCHEMA public TO <user_name>;` | Schema | Allows name resolution; pair with table/function privileges. |
+| Grant EXECUTE on all functions | `GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO <user_name>;` | Schema functions | Re-run or set default privileges after adding new functions. |
+| Grant DML on all tables | `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO <user_name>;` | Tables (existing) | Use `ALTER DEFAULT PRIVILEGES` to cover future tables. |
+| Grant DML on specific table | `GRANT SELECT, INSERT, UPDATE, DELETE ON <table_name> TO <user_name>;` | Single table | Add `TRUNCATE`, `REFERENCES` as needed. |
+| Grant SELECT on all tables | `GRANT SELECT ON ALL TABLES IN SCHEMA public TO <user_name>;` | Read-only | For reporting roles; also grant sequence USAGE if selecting nextval. |
+| Reference docs | <https://www.postgresql.org/docs/current/sql-grant.html> | Docs | Official GRANT documentation. |
+
+Tip: Default privileges example: `ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO <user_name>;`.
+
+## Manipulate Data
+
 Common DML operations:
 
 | Task | Command | Notes |
 |------|---------|-------|
 | Select all rows | `SELECT * FROM <table_name>;` | Prefer explicit column list in production. |
-| Select specific columns | `SELECT <col1>, <col2> FROM <table_name>;` | Replaces erroneous example `columns_name FROM table_names`. |
+| Select specific columns | `SELECT <col1>, <col2> FROM <table_name>;` | Avoid `SELECT *` for performance and stability. |
 | Select single row (any) | `SELECT * FROM <table_name> LIMIT 1;` | Add `ORDER BY` for deterministic result. |
-| Filter rows | `SELECT * FROM <table_name> WHERE <column_name> = <value>;` | Use parameterized queries to avoid injection. |
-| Insert row (positional) | `INSERT INTO <table_name> VALUES (<value_1>, <value_2>);` | Order must match table definition; brittle if schema changes. |
+| Filter rows | `SELECT * FROM <table_name> WHERE <column_name> = <value>;` | Parameterize to prevent SQL injection. |
+| Insert row (positional) | `INSERT INTO <table_name> VALUES (<value_1>, <value_2>);` | Column order sensitive; fragile if schema changes. |
 | Insert row (explicit) | `INSERT INTO <table_name> (<column_1>, <column_2>) VALUES (<value_1>, <value_2>);` | Safer—only specified columns. |
-| Update rows | `UPDATE <table_name> SET <column_1> = <value_1>, <column_2> = <value_2> WHERE <column_1> = <value>;` | Always include WHERE to avoid full-table updates. |
-| Delete all rows | `DELETE FROM <table_name>;` | Consider `TRUNCATE <table_name>;` for faster bulk removal (resets identity). |
-| Delete filtered rows | `DELETE FROM <table_name> WHERE <column_name> = <value>;` | Check affected row count. |
-| Upsert (optional) | `INSERT INTO <table>(id,col) VALUES($1,$2) ON CONFLICT (id) DO UPDATE SET col=EXCLUDED.col;` | Pattern for merge; requires unique constraint. |
-| Insert returning | `INSERT INTO <table_name> (<column_1>) VALUES (<value_1>) RETURNING *;` | RETURNING can list specific columns. |
-
-Common table & column operations:
-
-| Task | Command | Notes |
-|------|---------|-------|
-| List tables (current search_path) | `\dt` | Uses current `search_path`; add schema pattern: `\dt public.*`. |
-| List tables (all schemas) | `\dt *.*` | May include system schemas; filter as needed. |
-| List tables via information_schema | `SELECT table_schema, table_name FROM information_schema.tables ORDER BY table_schema, table_name;` | ANSI view; excludes some system catalogs. |
-| List tables via catalog | `SELECT * FROM pg_catalog.pg_tables;` | Raw catalog view; includes internal details. |
-| Describe table (summary) | `\d <table_name>` | Columns, types, modifiers, indexes. |
-| Describe table (extended) | `\d+ <table_name>` | Adds storage, description, size. |
-| List columns (SQL) | `SELECT column_name, data_type, character_maximum_length FROM information_schema.columns WHERE table_name = '<table_name>';` | Use for scripting / tooling. |
-| Create table (basic) | `CREATE TABLE <table_name> ( <col1> <type1>, <col2> <type2> );` | Define constraints (PK, FK, UNIQUE, CHECK) inline or at end. |
-| Create table with serial PK | `CREATE TABLE <table_name> ( id SERIAL PRIMARY KEY, ... );` | Prefer identity: `GENERATED BY DEFAULT AS IDENTITY` in modern Postgres. |
-| Drop table (if exists) | `DROP TABLE IF EXISTS <table_name> CASCADE;` | CASCADE removes dependent objects; prefer RESTRICT in production. |
-| Add column | `ALTER TABLE <table_name> ADD COLUMN <column_name> <data_type> [<constraints>];` | New column defaults NULL unless DEFAULT specified. |
-| Alter column type | `ALTER TABLE <table_name> ALTER COLUMN <column_name> TYPE <data_type> USING <expression>;` | `USING` needed for non-trivial casts. |
-| Drop column | `ALTER TABLE <table_name> DROP COLUMN <column_name>;` | Irreversible (except from backup). |
-| Add serial / identity PK to existing table | `ALTER TABLE <table_name> ADD COLUMN id SERIAL PRIMARY KEY;` | Identity alternative: `ADD COLUMN id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY;`. |
-| Insert row (auto id) | `INSERT INTO <table_name> VALUES (DEFAULT, <value1>);` | Position-based; fragile if schema changes—prefer explicit columns. |
-| Insert row (explicit cols) | `INSERT INTO <table_name> (<col1>, <col2>) VALUES (<val1>, <val2>);` | Safer; specify only needed columns. |
-| Upsert (insert or update) | `INSERT INTO <table>(id, col) VALUES($1,$2) ON CONFLICT (id) DO UPDATE SET col=EXCLUDED.col;` | Requires unique index / constraint on conflict target. |
-| Truncate table | `TRUNCATE <table_name> RESTART IDENTITY CASCADE;` | Fast delete; drops & resets sequences; CASCADE affects FK children. |
-
-## Manipulate Data
-
-### insert data
-
-```sql
-INSERT INTO <table_name> VALUES( <value_1>, <value_2> );
-```
-
-### Read data
-
-```sql
-SELECT * FROM <table_name>;
-SELECT columns_name FROM table_names;
-```
-
-### read one row of data
-
-```sql
-SELECT * FROM <table_name> LIMIT 1;
-```
-
-### Search for data
-
-```sql
-SELECT * FROM <table_name> WHERE <column_name> = <value>;
-```
-
-### edit data
-
-```sql
-UPDATE <table_name>
-SET <column_1> = <value_1>, <column_2> = <value_2>
-WHERE <column_1> = <value>;
-```
-
-#### delete all data
-
-```sql
-DELETE FROM <table_name>;
-```
-
-##### delete specific data
-
-```sql
-DELETE FROM <table_name>
-WHERE <column_name> = <value>;
-```
+| Insert returning | `INSERT INTO <table_name> (<column_1>) VALUES (<value_1>) RETURNING *;` | Limit RETURNING list for large tables. |
+| Upsert (merge) | `INSERT INTO <table>(id,col) VALUES($1,$2) ON CONFLICT (id) DO UPDATE SET col=EXCLUDED.col;` | Requires PK or unique index on conflict target. |
+| Update rows | `UPDATE <table_name> SET <column_1> = <value_1>, <column_2> = <value_2> WHERE <column_1> = <value>;` | Always include WHERE; inspect row count. |
+| Delete filtered rows | `DELETE FROM <table_name> WHERE <column_name> = <value>;` | Check `RETURNING` for confirmation. |
+| Delete all rows | `DELETE FROM <table_name>;` | Consider `TRUNCATE <table_name>;` for faster bulk purge + identity reset. |
+| Truncate table | `TRUNCATE <table_name> RESTART IDENTITY CASCADE;` | Fast, resets sequences; CASCADE affects referencing tables. |
 
 ## Scripting
 
-##### run local script, on remote host
+Script and backup / restore operations:
 
-```shell
-psql -U <username> -d <database> -h <host> -f <local_file>
+| Task | Command | Notes |
+|------|---------|-------|
+| Run local SQL file on remote host | `psql -h <host> -U <username> -d <database> -f <local_file>` | Long option form: `psql --host=... --username=... --dbname=... --file=...`. Requires network access & permissions. |
+| Full logical backup (schema+data) | `pg_dump <database_name> > dump.sql` | Produces plain SQL; use `-Fc` for custom format enabling parallel restore. |
+| Backup data only | `pg_dump -a <database_name> > data.sql` | Long form: `--data-only`; excludes schema definitions. |
+| Backup schema only | `pg_dump -s <database_name> > schema.sql` | Long form: `--schema-only`; no table data. |
+| Restore (custom format) | `pg_restore -d <database_name> <file_path>` | Use with dumps created via `pg_dump -Fc`; add `-j <n>` for parallel threads. |
+| Restore data only (custom) | `pg_restore -d <database_name> -a <file_path>` | Long form: `--data-only`; target DB & objects must already exist (unless using `-c`). |
+| Restore schema only (custom) | `pg_restore -d <database_name> -s <file_path>` | Long form: `--schema-only`; creates object definitions only. |
+| Export table to CSV (server side) | `\copy <table_name> TO '<file_path>' CSV` | Uses psql's `\copy` (client-side); add `HEADER` for column headers. |
+| Export selected columns to CSV | `\copy <table_name>(<col1>,<col2>,<col3>) TO '<file_path>' CSV` | Order dictates column order in file. |
+| Import CSV into table | `\copy <table_name> FROM '<file_path>' CSV` | Ensure file encodes text correctly (UTF-8); add `HEADER` if file has header row. |
+| Import selected columns from CSV | `\copy <table_name>(<col1>,<col2>,<col3>) FROM '<file_path>' CSV` | Omitted columns use defaults / NULL. |
+| Faster bulk load (binary) | `\copy <table_name> FROM '<file_path>' (FORMAT binary)` | Requires matching binary format file (`pg_dump -Fc` isn't directly used here). |
+| Terminate conflicting sessions (pre-restore) | `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='<database_name>' AND pid <> pg_backend_pid();` | Use cautiously; disconnects users. |
+| Parallel dump | `pg_dump -Fd -j 4 -f <dir_path> <database_name>` | Directory format; combine with `pg_restore -d <db> -j 4 <dir_path>`. |
+| Compressed dump | `pg_dump -Fc <database_name> > dump.custom` | Custom format; can be selectively restored. |
 
-psql --username=<username> --dbname=<database> --host=<host> --file=<local_file>
-```
-
-##### backup database data, everything
-
-```shell
-pg_dump <database_name>
-
-pg_dump <database_name>
-```
-
-##### backup database, only data
-
-```shell
-pg_dump -a <database_name>
-
-pg_dump --data-only <database_name>
-```
-
-##### backup database, only schema
-
-```shell
-pg_dump -s <database_name>
-
-pg_dump --schema-only <database_name>
-```
-
-##### restore database data
-
-```shell
-pg_restore -d <database_name> -a <file_pathway>
-
-pg_restore --dbname=<database_name> --data-only <file_pathway>
-```
-
-##### restore database schema
-
-```shell
-pg_restore -d <database_name> -s <file_pathway>
-
-pg_restore --dbname=<database_name> --schema-only <file_pathway>
-```
-
-##### export table into CSV file
-
-<http://www.postgresql.org/docs/current/static/sql-copy.html>
-
-```sql
-\copy <table_name> TO '<file_path>' CSV
-```
-
-##### export table, only specific columns, to CSV file
-
-```sql
-\copy <table_name>(<column_1>,<column_1>,<column_1>) TO '<file_path>' CSV
-```
-
-##### import CSV file into table
-
-<http://www.postgresql.org/docs/current/static/sql-copy.html>
-
-```sql
-\copy <table_name> FROM '<file_path>' CSV
-```
-
-##### import CSV file into table, only specific columns
-
-```sql
-\copy <table_name>(<column_1>,<column_1>,<column_1>) FROM '<file_path>' CSV
-```
+Reference: [COPY docs](https://www.postgresql.org/docs/current/sql-copy.html)
 
 ## Debugging
 
