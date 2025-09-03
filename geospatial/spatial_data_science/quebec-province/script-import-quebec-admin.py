@@ -32,7 +32,8 @@ source = SimpleNamespace(
 target = SimpleNamespace(
     wantedRegion="Capitale-Nationale",
     columns=[],
-    precision=0.0000001
+    precision=0.0000001,
+    filename="./data/administrative_regions_capitale_nationale.csv"
 )
 target_columns_name = {
     "RES_CO_REG": "region_id",
@@ -63,15 +64,17 @@ newDataframe["updated_at"] = source.updatedAt
 
 # Reorder columns to "region_id", "name", "updated_at", "geom"
 newDataframe = newDataframe[["region_id", "name", "updated_at", "geom"]]
-# %%
-# Reduce the precision to 6 digits for the value in the column 'geom'
+
+# Reduce the precision to 7 digits for the value in the column 'geom'
 newDataframe["geom"] = set_precision(newDataframe["geom"], grid_size=target.precision)
 
-# %%
 # Add a column 'is_valid_geom' if the column 'geom' is valid
 validation = pd.DataFrame()
 validation["is_valid_geom"] = newDataframe["geom"].apply(
     lambda geom: geom.is_valid
 )
 
-newDataframe.to_csv("./data/administrative_regions.csv", index=False)
+capitalDataframe = newDataframe.loc[newDataframe["name"] == target.wantedRegion]
+capitalDataframe.to_csv(target.filename, index=False)
+
+# newDataframe.to_csv("./data/administrative_regions.csv", index=False)

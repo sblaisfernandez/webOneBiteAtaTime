@@ -12,9 +12,7 @@ docker run --name mypostgres -p 5433:5433 -e POSTGRES_USER=mypostgres -e POSTGRE
 docker run -it --link mypostgres:postgres --rm postgres \
     sh -c 'exec psql -h "$POSTGRES_PORT_5432_TCP_ADDR" -p "$POSTGRES_PORT_5432_TCP_PORT" -U postgres'
 ```
-
 docker volume create my-postgis-volume
-
 ```bash
 docker pull mdillon/postgis
 docker run --platform linux/arm64 mdillon/postgis
@@ -104,7 +102,6 @@ Here’s the recon section condensed into a markdown table:
 # Relational Database (RDBMS)
 
 - [Derek Banas Master postgresl](https://www.youtube.com/watch?v=85pG_pDkITY)
-
 - [SQL course](https://www.freecodecamp.org/news/learn-sql-free-relational-database-courses-for-beginners/)
 - [Coursera Introduction to relational Databases](https://www.coursera.org/learn/introduction-to-relational-databases#modules)
 - [Course](https://www.youtube.com/watch?v=SpfIwlAYaKk)
@@ -153,7 +150,7 @@ Commun words used to name DB columns `created_at`, `updated_at`, `source_id`, `d
 - Reduce Redundant Data: Normalization
 
 ```sql
-CREATE TYPE sex_type AS ennum ('M', 'F')
+CREATE TYPE sex_type AS enum ('M', 'F')
 
 create table customers (
     first_name text NOT null,
@@ -169,6 +166,28 @@ create table customers (
     sex sex_type not null,
     created_at date not null,
     id serial primary key
+)
+
+create table product(
+  type_id int references,
+  product_type(id),
+  name varchar(30) not null,
+  supplier varchar(30) not null,
+  description text not null,
+  id serial primary key);
+
+create table product_type(
+  name varchar(30) not null,
+  id serial primary key
+);
+
+create table item(
+  product_id integer references product(id),
+  size integer not null,
+  color varchar(30) not null,
+  picture varchar(30) not null,
+  price numeric(6,2) not null,
+  id serial primary key
 )
 ```
 
