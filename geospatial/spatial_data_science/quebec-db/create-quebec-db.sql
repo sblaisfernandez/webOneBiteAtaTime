@@ -47,11 +47,16 @@ create table public.fire_stations (
 create table public.municipalities (
   municipality_code integer as identity not null,
   municipality_name text null,
-  area real null,
-  perimeter real null,
-  updated_at timestamp with time zone not null default now(),
+  address text null,
+  city text null,
+  postal_code text null,
+  phone bigint null,
+  email text null,
+  website text null,
+  population bigint null,
+  updated_at timestamp not null default now(),
   geom geometry null,
-  constraint municipalities_pkey primary key (municipality_code)
+  constraint municipalities_code_pkey primary key (municipality_code)
 ) TABLESPACE pg_default;
 
 delete from public.zoning;
