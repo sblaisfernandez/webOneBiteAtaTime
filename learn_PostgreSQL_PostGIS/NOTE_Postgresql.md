@@ -12,7 +12,9 @@ docker run --name mypostgres -p 5433:5433 -e POSTGRES_USER=mypostgres -e POSTGRE
 docker run -it --link mypostgres:postgres --rm postgres \
     sh -c 'exec psql -h "$POSTGRES_PORT_5432_TCP_ADDR" -p "$POSTGRES_PORT_5432_TCP_PORT" -U postgres'
 ```
+
 docker volume create my-postgis-volume
+
 ```bash
 docker pull mdillon/postgis
 docker run --platform linux/arm64 mdillon/postgis
@@ -97,11 +99,9 @@ Here’s the recon section condensed into a markdown table:
 | **Domain**      | domain                    | *Custom Type*                       | —                                         | Constraint‑wrapped type                    | `CREATE DOMAIN positive_int AS integer CHECK (VALUE>0);` |
 | **Pseudo**      | anyelement, anyarray, ... | *Pseudo‑types*                      | —                                         | Function parameter/result types (not columns) | Used in stored procedures             |
 
-## Learn PostgreSQL
+## Learn PostgreSQL - Relational Database (RDBMS)
 
-# Relational Database (RDBMS)
-
-- [Derek Banas Master postgresl](https://www.youtube.com/watch?v=85pG_pDkITY)
+- [Derek Banas Master postgresql](https://www.youtube.com/watch?v=85pG_pDkITY)
 - [SQL course](https://www.freecodecamp.org/news/learn-sql-free-relational-database-courses-for-beginners/)
 - [Coursera Introduction to relational Databases](https://www.coursera.org/learn/introduction-to-relational-databases#modules)
 - [Course](https://www.youtube.com/watch?v=SpfIwlAYaKk)
@@ -149,310 +149,90 @@ Commun words used to name DB columns `created_at`, `updated_at`, `source_id`, `d
 - How to table relate to each other: `foreign_key`
 - Reduce Redundant Data: Normalization
 
-```sql
-CREATE TYPE sex_type AS enum ('M', 'F')
-
-create table customers (
-    first_name text NOT null,
-    last_name text NOT NULL,
-    email text not null,
-    company text,
-    street text not null,
-    city text not null,
-    state text not null,
-    zip smallint not null,
-    phone varchar(20) not null,
-    birth_date Date null,
-    sex sex_type not null,
-    created_at date not null,
-    id serial primary key
-)
-
-create table product(
-  type_id int references,
-  product_type(id),
-  name varchar(30) not null,
-  supplier varchar(30) not null,
-  description text not null,
-  id serial primary key);
-
-create table product_type(
-  name varchar(30) not null,
-  id serial primary key
-);
-
-create table item(
-  product_id integer references product(id),
-  size integer not null,
-  color varchar(30) not null,
-  picture varchar(30) not null,
-  price numeric(6,2) not null,
-  id serial primary key
-)
-```
-
-##### delete database
-
-<http://www.postgresql.org/docs/current/static/sql-dropdatabase.html>
-
-```sql
-DROP DATABASE IF EXISTS <database_name>;
-```
-
-##### rename database
-
-<http://www.postgresql.org/docs/current/static/sql-alterdatabase.html>
-
-```sql
-ALTER DATABASE <old_name> RENAME TO <new_name>;
-```
+- [postgresql-tutorial](https://github.com/derekbanas/postgresql-tutorial/tree/main)
 
 ## Users
 
-List roles
-
-```sql
-SELECT rolname FROM pg_roles;
-```
-
-Create user
-
-<http://www.postgresql.org/docs/current/static/sql-createuser.html>
-
-```sql
-CREATE USER <user_name> WITH PASSWORD '<password>';
-```
-
-##### drop user
-
-<http://www.postgresql.org/docs/current/static/sql-dropuser.html>
-
-```sql
-DROP USER IF EXISTS <user_name>;
-```
-
-##### alter user password
-
-<http://www.postgresql.org/docs/current/static/sql-alterrole.html>
-
-```sql
-ALTER ROLE <user_name> WITH PASSWORD '<password>';
-```
+| Task | Command | Type | Notes |
+|------|---------|------|-------|
+| List roles | `SELECT rolname FROM pg_roles;` | SQL | Equivalent psql meta: `\du` (or `\du+` for attributes). |
+| Create user (role with LOGIN) | `CREATE USER <user_name> WITH PASSWORD '<password>';` | SQL | Shorthand for `CREATE ROLE ... LOGIN`. Add options: `VALID UNTIL 'infinity'`, `CREATEDB`, etc. |
+| Drop user | `DROP USER IF EXISTS <user_name>;` | SQL | Fails if role owns objects; reassign or drop objects first. |
+| Change password | `ALTER ROLE <user_name> WITH PASSWORD '<password>';` | SQL | Use `ALTER ROLE ... PASSWORD NULL` to remove password. |
+| Grant all on database | `GRANT ALL PRIVILEGES ON DATABASE <db_name> TO <user_name>;` | SQL | Consider principle of least privilege instead of blanket ALL. |
+| Grant connect only | `GRANT CONNECT ON DATABASE <db_name> TO <user_name>;` | SQL | Needed before schema/table grants for fresh roles. |
+| Grant usage on schema | `GRANT USAGE ON SCHEMA public TO <user_name>;` | SQL | Required so role can access objects within the schema. |
+| Grant table privileges | `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO <user_name>;` | SQL | For future tables: also run `ALTER DEFAULT PRIVILEGES`. |
 
 ## Permissions
 
-##### become the postgreSQL user, if you have permission errors
+Common DML operations:
 
-```shell
-sudo su - postgres
-psql
-```
+| Task | Command | Notes |
+|------|---------|-------|
+| Select all rows | `SELECT * FROM <table_name>;` | Prefer explicit column list in production. |
+| Select specific columns | `SELECT <col1>, <col2> FROM <table_name>;` | Replaces erroneous example `columns_name FROM table_names`. |
+| Select single row (any) | `SELECT * FROM <table_name> LIMIT 1;` | Add `ORDER BY` for deterministic result. |
+| Filter rows | `SELECT * FROM <table_name> WHERE <column_name> = <value>;` | Use parameterized queries to avoid injection. |
+| Insert row (positional) | `INSERT INTO <table_name> VALUES (<value_1>, <value_2>);` | Order must match table definition; brittle if schema changes. |
+| Insert row (explicit) | `INSERT INTO <table_name> (<column_1>, <column_2>) VALUES (<value_1>, <value_2>);` | Safer—only specified columns. |
+| Update rows | `UPDATE <table_name> SET <column_1> = <value_1>, <column_2> = <value_2> WHERE <column_1> = <value>;` | Always include WHERE to avoid full-table updates. |
+| Delete all rows | `DELETE FROM <table_name>;` | Consider `TRUNCATE <table_name>;` for faster bulk removal (resets identity). |
+| Delete filtered rows | `DELETE FROM <table_name> WHERE <column_name> = <value>;` | Check affected row count. |
+| Upsert (optional) | `INSERT INTO <table>(id,col) VALUES($1,$2) ON CONFLICT (id) DO UPDATE SET col=EXCLUDED.col;` | Pattern for merge; requires unique constraint. |
+| Insert returning | `INSERT INTO <table_name> (<column_1>) VALUES (<value_1>) RETURNING *;` | RETURNING can list specific columns. |
 
-##### grant all permissions on database
+Common table & column operations:
 
-<http://www.postgresql.org/docs/current/static/sql-grant.html>
+| Task | Command | Notes |
+|------|---------|-------|
+| List tables (current search_path) | `\dt` | Uses current `search_path`; add schema pattern: `\dt public.*`. |
+| List tables (all schemas) | `\dt *.*` | May include system schemas; filter as needed. |
+| List tables via information_schema | `SELECT table_schema, table_name FROM information_schema.tables ORDER BY table_schema, table_name;` | ANSI view; excludes some system catalogs. |
+| List tables via catalog | `SELECT * FROM pg_catalog.pg_tables;` | Raw catalog view; includes internal details. |
+| Describe table (summary) | `\d <table_name>` | Columns, types, modifiers, indexes. |
+| Describe table (extended) | `\d+ <table_name>` | Adds storage, description, size. |
+| List columns (SQL) | `SELECT column_name, data_type, character_maximum_length FROM information_schema.columns WHERE table_name = '<table_name>';` | Use for scripting / tooling. |
+| Create table (basic) | `CREATE TABLE <table_name> ( <col1> <type1>, <col2> <type2> );` | Define constraints (PK, FK, UNIQUE, CHECK) inline or at end. |
+| Create table with serial PK | `CREATE TABLE <table_name> ( id SERIAL PRIMARY KEY, ... );` | Prefer identity: `GENERATED BY DEFAULT AS IDENTITY` in modern Postgres. |
+| Drop table (if exists) | `DROP TABLE IF EXISTS <table_name> CASCADE;` | CASCADE removes dependent objects; prefer RESTRICT in production. |
+| Add column | `ALTER TABLE <table_name> ADD COLUMN <column_name> <data_type> [<constraints>];` | New column defaults NULL unless DEFAULT specified. |
+| Alter column type | `ALTER TABLE <table_name> ALTER COLUMN <column_name> TYPE <data_type> USING <expression>;` | `USING` needed for non-trivial casts. |
+| Drop column | `ALTER TABLE <table_name> DROP COLUMN <column_name>;` | Irreversible (except from backup). |
+| Add serial / identity PK to existing table | `ALTER TABLE <table_name> ADD COLUMN id SERIAL PRIMARY KEY;` | Identity alternative: `ADD COLUMN id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY;`. |
+| Insert row (auto id) | `INSERT INTO <table_name> VALUES (DEFAULT, <value1>);` | Position-based; fragile if schema changes—prefer explicit columns. |
+| Insert row (explicit cols) | `INSERT INTO <table_name> (<col1>, <col2>) VALUES (<val1>, <val2>);` | Safer; specify only needed columns. |
+| Upsert (insert or update) | `INSERT INTO <table>(id, col) VALUES($1,$2) ON CONFLICT (id) DO UPDATE SET col=EXCLUDED.col;` | Requires unique index / constraint on conflict target. |
+| Truncate table | `TRUNCATE <table_name> RESTART IDENTITY CASCADE;` | Fast delete; drops & resets sequences; CASCADE affects FK children. |
 
-```sql
-GRANT ALL PRIVILEGES ON DATABASE <db_name> TO <user_name>;
-```
+## Manipulate Data
 
-##### grant connection permissions on database
-
-```sql
-GRANT CONNECT ON DATABASE <db_name> TO <user_name>;
-```
-
-##### grant permissions on schema
-
-```sql
-GRANT USAGE ON SCHEMA public TO <user_name>;
-```
-
-##### grant permissions to functions
-
-```sql
-GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO <user_name>;
-```
-
-##### grant permissions to select, update, insert, delete, on a all tables
-
-```sql
-GRANT SELECT, UPDATE, INSERT ON ALL TABLES IN SCHEMA public TO <user_name>;
-```
-
-##### grant permissions, on a table
-
-```sql
-GRANT SELECT, UPDATE, INSERT ON <table_name> TO <user_name>;
-```
-
-##### grant permissions, to select, on a table
+### insert data
 
 ```sql
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO <user_name>;
+INSERT INTO <table_name> VALUES( <value_1>, <value_2> );
 ```
 
-## Schema
-
-List schemas
-
-```sql
-\dn
-
-SELECT schema_name FROM information_schema.schemata;
-
-SELECT nspname FROM pg_catalog.pg_namespace;
-```
-
-Create schema
-
-<http://www.postgresql.org/docs/current/static/sql-createschema.html>
-
-```sql
-CREATE SCHEMA IF NOT EXISTS <schema_name>;
-```
-
-##### drop schema
-
-<http://www.postgresql.org/docs/current/static/sql-dropschema.html>
-
-```sql
-DROP SCHEMA IF EXISTS <schema_name> CASCADE;
-```
-
-## Tables
-
-List tables, in current db
-
-```sql
-\dt
-
-SELECT table_schema,table_name FROM information_schema.tables ORDER BY table_schema,table_name;
-```
-
-List tables, globally
-
-```sql
-\dt *.*.
-
-SELECT * FROM pg_catalog.pg_tables
-```
-
-List table schema
-
-```sql
-\d <table_name>
-\d+ <table_name>
-
-SELECT column_name, data_type, character_maximum_length
-FROM INFORMATION_SCHEMA.COLUMNS
-WHERE table_name = '<table_name>';
-```
-
-Create table
-
-<http://www.postgresql.org/docs/current/static/sql-createtable.html>
-
-```sql
-CREATE TABLE <table_name>(
-  <column_name> <column_type>,
-  <column_name> <column_type>
-);
-```
-
-Create table, with an auto-incrementing primary key
-
-```sql
-CREATE TABLE <table_name> (
-  <column_name> SERIAL PRIMARY KEY
-);
-```
-
-##### delete table
-
-<http://www.postgresql.org/docs/current/static/sql-droptable.html>
-
-```sql
-DROP TABLE IF EXISTS <table_name> CASCADE;
-```
-
-## Columns
-
-##### add column
-
-<http://www.postgresql.org/docs/current/static/sql-altertable.html>
-
-```sql
-ALTER TABLE <table_name> IF EXISTS
-ADD <column_name> <data_type> [<constraints>];
-```
-
-##### update column
-
-```sql
-ALTER TABLE <table_name> IF EXISTS
-ALTER <column_name> TYPE <data_type> [<constraints>];
-```
-
-##### delete column
-
-```sql
-ALTER TABLE <table_name> IF EXISTS
-DROP <column_name>;
-```
-
-##### update column to be an auto-incrementing primary key
-
-```sql
-ALTER TABLE <table_name>
-ADD COLUMN <column_name> SERIAL PRIMARY KEY;
-```
-
-##### insert into a table, with an auto-incrementing primary key
-
-```sql
-INSERT INTO <table_name>
-VALUES (DEFAULT, <value1>);
-
-
-INSERT INTO <table_name> (<column1_name>,<column2_name>)
-VALUES ( <value1>,<value2> );
-```
-
-## Data
-
-##### read all data
-
-<http://www.postgresql.org/docs/current/static/sql-select.html>
+### Read data
 
 ```sql
 SELECT * FROM <table_name>;
 SELECT columns_name FROM table_names;
 ```
 
-##### read one row of data
+### read one row of data
 
 ```sql
 SELECT * FROM <table_name> LIMIT 1;
 ```
 
-# Search for data
+### Search for data
 
 ```sql
 SELECT * FROM <table_name> WHERE <column_name> = <value>;
 ```
 
-##### insert data
-
-<http://www.postgresql.org/docs/current/static/sql-insert.html>
-
-```sql
-INSERT INTO <table_name> VALUES( <value_1>, <value_2> );
-```
-
-##### edit data
-
-<http://www.postgresql.org/docs/current/static/sql-update.html>
+### edit data
 
 ```sql
 UPDATE <table_name>
@@ -460,9 +240,7 @@ SET <column_1> = <value_1>, <column_2> = <value_2>
 WHERE <column_1> = <value>;
 ```
 
-##### delete all data
-
-<http://www.postgresql.org/docs/current/static/sql-delete.html>
+#### delete all data
 
 ```sql
 DELETE FROM <table_name>;
@@ -479,8 +257,6 @@ WHERE <column_name> = <value>;
 
 ##### run local script, on remote host
 
-<http://www.postgresql.org/docs/current/static/app-psql.html>
-
 ```shell
 psql -U <username> -d <database> -h <host> -f <local_file>
 
@@ -488,8 +264,6 @@ psql --username=<username> --dbname=<database> --host=<host> --file=<local_file>
 ```
 
 ##### backup database data, everything
-
-<http://www.postgresql.org/docs/current/static/app-pgdump.html>
 
 ```shell
 pg_dump <database_name>
@@ -514,8 +288,6 @@ pg_dump --schema-only <database_name>
 ```
 
 ##### restore database data
-
-<http://www.postgresql.org/docs/current/static/app-pgrestore.html>
 
 ```shell
 pg_restore -d <database_name> -a <file_pathway>
