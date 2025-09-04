@@ -111,7 +111,7 @@ source = SimpleNamespace(
 target = SimpleNamespace(
     columns=[],
     precision=0.0000001,
-    filename="./data/quebec-municipalities-geocoded.csv",
+    filename="./data/quebec-municipalities-city-hall-geocoded.csv",
     wantedColumns=[
         "mcode",
         "munnom",
