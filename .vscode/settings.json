@@ -1,6 +1,7 @@
 {
   "cSpell.words": [
     "astype",
+    "Banas",
     "cartesian",
     "Carto",
     "Creational",
@@ -11,19 +12,34 @@
     "geometrie",
     "GEOMETRYCOLLECTION",
     "Geospatial",
+    "gmaps",
     "IIFE",
     "kangalou",
     "Linearithmic",
     "linestring",
     "linux",
+    "listlayers",
+    "mdillon",
     "multiband",
     "MULTILINESTRING",
     "MULTIPOLYGON",
+    "nullable",
+    "PERIMETRE",
+    "pgloader",
     "postgis",
+    "postgres",
+    "postgresql",
+    "RDBMS",
+    "rolename",
+    "sjoin",
     "srid",
-    "supabase"
+    "supabase",
+    "varchar"
   ],
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
-  }
+  },
+  "python-envs.defaultEnvManager": "ms-python.python:conda",
+  "python-envs.defaultPackageManager": "ms-python.python:conda",
+  "python-envs.pythonProjects": []
 }
