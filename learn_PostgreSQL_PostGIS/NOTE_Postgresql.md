@@ -151,6 +151,30 @@ Commun words used to name DB columns `created_at`, `updated_at`, `source_id`, `d
 
 - [postgresql-tutorial](https://github.com/derekbanas/postgresql-tutorial/tree/main)
 
+## Schemas
+
+```sql
+SELECT current_schema();
+
+SELECT schema_name FROM information_schema.schemata ORDER BY schema_name;
+```
+
+A PostgreSQL database cluster contains one or more named databases. Roles and a few other object types are shared across the entire cluster. A client connection to the server can only access data in a single database, the one specified in the connection request.
+
+A database contains one or more named schemas, which in turn contain tables. Schemas also contain other kinds of named objects, including data types, functions, and operators. Within one schema, two objects of the same type cannot have the same name.
+
+Furthermore, tables, sequences, indexes, views, materialized views, and foreign tables share the same namespace, so that, for example, an index and a table must have different names if they are in the same schema.
+
+There are several reasons why one might want to use schemas:
+
+- To allow many users to use one database without interfering with each other.
+
+- To organize database objects into logical groups to make them more manageable.
+
+- Third-party applications can be put into separate schemas so they do not collide with the names of other objects.
+
+PostgreSQL automatically creates a schema called public for every new database. Whatever object you create without specifying the schema name, PostgreSQL will place it into this public schema.
+
 ## Users
 
 | Task | Command | Type | Notes |
@@ -164,23 +188,133 @@ Commun words used to name DB columns `created_at`, `updated_at`, `source_id`, `d
 | Grant usage on schema | `GRANT USAGE ON SCHEMA public TO <user_name>;` | SQL | Required so role can access objects within the schema. |
 | Grant table privileges | `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO <user_name>;` | SQL | For future tables: also run `ALTER DEFAULT PRIVILEGES`. |
 
-## Permissions
+Each row represents one role and includes details like:
+
+Role name
+Whether it can log in
+Whether it can create databases
+Whether it can create new roles
+Whether it’s a superuser
+Whether it inherits privileges from roles it’s a member of
+
+```sql
+-- List all roles with key attributes
+SELECT rolname,
+       rolsuper,
+       rolcreatedb,
+       rolcreaterole,
+       rolreplication,
+       rolcanlogin,
+       rolconnlimit,
+       rolvaliduntil
+FROM pg_roles;
+
+CREATE USER custom_user WITH PASSWORD 'password';
+
+alter role custom_user with password 'newpassword';
+
+drop  user  if exists custom_user;
+
+-- Select add db
+SELECT * FROM pg_database ORDER BY datname;
+```
+
+## Privileges
+
+When an object is created, it is assigned an owner. The owner is normally the role that executed the creation statement. For most kinds of objects, the initial state is that only the owner (or a superuser) can do anything with the object. To allow other roles to use it, privileges must be granted.
+
+There are different kinds of privileges: SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER, CREATE, CONNECT, TEMPORARY, EXECUTE, USAGE, SET, ALTER SYSTEM, and MAINTAIN. The privileges applicable to a particular object vary depending on the object's type (table, function, etc.). More detail about the meanings of these privileges appears below. The following sections and chapters will also show you how these privileges are used.
+
+The right to modify or destroy an object is inherent in being the object's owner, and cannot be granted or revoked in itself. (However, like all privileges, that right can be inherited by members of the owning role.
 
 Privilege and role operations:
 
 | Task | Command | Scope | Notes |
 |------|---------|-------|-------|
 | Become postgres OS user (interactive) | `sudo su - postgres && psql` | OS / session | Needed to issue superuser-level grants when your current role lacks rights. |
-| Grant ALL on database | `GRANT ALL PRIVILEGES ON DATABASE <db_name> TO <user_name>;` | Database | Broad privileges; prefer least privilege principle. |
+| Grant ALL privileges on database | `GRANT ALL PRIVILEGES ON DATABASE <db_name> TO <user_name>;` | Database | Broad privileges; prefer least privilege principle. |
 | Grant CONNECT on database | `GRANT CONNECT ON DATABASE <db_name> TO <user_name>;` | Database | Needed before schema/table access if revoked previously. |
 | Grant USAGE on schema | `GRANT USAGE ON SCHEMA public TO <user_name>;` | Schema | Allows name resolution; pair with table/function privileges. |
 | Grant EXECUTE on all functions | `GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO <user_name>;` | Schema functions | Re-run or set default privileges after adding new functions. |
 | Grant DML on all tables | `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO <user_name>;` | Tables (existing) | Use `ALTER DEFAULT PRIVILEGES` to cover future tables. |
 | Grant DML on specific table | `GRANT SELECT, INSERT, UPDATE, DELETE ON <table_name> TO <user_name>;` | Single table | Add `TRUNCATE`, `REFERENCES` as needed. |
 | Grant SELECT on all tables | `GRANT SELECT ON ALL TABLES IN SCHEMA public TO <user_name>;` | Read-only | For reporting roles; also grant sequence USAGE if selecting nextval. |
-| Reference docs | <https://www.postgresql.org/docs/current/sql-grant.html> | Docs | Official GRANT documentation. |
 
 Tip: Default privileges example: `ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO <user_name>;`.
+
+## Roles creation and privileges management best practice
+
+Define roles that encapsulate set of permissions `app_readonly`, `data_analyst`. then assign those roles to a user, rather then directly granting privileges
+to a specific user.
+
+- Use non-login roles for grouping
+
+- Create roles without the LOGIN attribute to serve purely as containers for privileges, then grant there 'group' roles to actual login-enabled users.
+
+- Apply the **principle of least privileges**
+- Separate administrative and application users
+
+- Strong password policies
+- Use scram-sha-256 for password authentification.
+
+- Secure connection method using SSL/TLS
+
+- Change password periodically.
+
+- Don't use SuperUser for application
+
+- Review privileges granted to roles and users periodically.
+- Document roles structure
+- Monitor user activity, implement logging auditing.
+
+```sql
+
+
+```
+
+### Presentation For your Eyes Only: Roles, Privileges  and security in postgresql
+
+- [Roles, Privileges  and security in postgresql](https://youtu.be/mtPM3iZFE04?si=33c_hp_yHynVEcme)
+
+#### Users and Groups
+
+Semantically the same as roles
+
+By convention:
+
+User = LOGIN
+Group = NOLOGIN
+
+PostgreSQL 8.2+ CREATE (USER | GROUP) is an alias
+
+```sql
+CREATE ROLE user1 WITH LOGIN password 'secretpassword' INHERIT;
+```
+
+When a user is set by default.  Unless otherwise set, new roles can INHERIT privileges from other roles and have unlimited connection.
+
+**PUBLIC Role**
+
+- All roles are granted implicit membership to PUBLIC.
+- the public road cannot be deleted.
+- Granted  CONNECT, USAGE, TEMPORARY, and EXECUTE by default.
+- >= PG15: NO CREATE on public SCHEMA BY default FOR THE PUBLIC role.
+- **BEST PRACTICES**  Revoke all privileges on the public schema from the PUBLIC role. Revoke all database privileges from the PUBLIC role.
+
+```sql
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON DATABASE db_name FROM PUBLIC;
+```
+
+### Privilege Inheritance
+
+- Role can be granted membership into another role.
+- If a role has INHERIT set, they automatically have usage of privileges from member roles.
+- The preferred method for managing group privileges.
+
+### Providing Object Access
+
+SET ROLE to ap role before creation with correct default privileges.
 
 ## Manipulate Data
 
