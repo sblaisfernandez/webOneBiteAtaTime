@@ -97,7 +97,7 @@ docker-machine ssh myvm1 "docker stack deploy -c <file> <app>" # Deploy an app
 Create the docker container.
 
 ```bash
-docker run -d -p 5432:5432 --name taxi-pg-test -e POSTGRES_PASSWORD=pwd mdillon/postgis
+docker run -d -p 5432:5432 --name taxi-pg-test -e POSTGRES_USER=postgres POSTGRES_PASSWORD=postgre mdillon/postgis
 ```
 
 ```bash
@@ -149,17 +149,3 @@ password: pwd
 ```
 
 Make sure postGIS is installed.
-
----
-
-```bash
-
-```
-
----
-
-# Postgresql Cheatsheet
-
-```sql
-\c <db_name> --return db name
-```

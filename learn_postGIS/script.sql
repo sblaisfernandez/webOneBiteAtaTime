@@ -1,2 +1,0 @@
-SELECT
-    'HELLO WORLD';
