@@ -99,6 +99,9 @@ Here’s the recon section condensed into a markdown table:
 | **Domain**      | domain                    | *Custom Type*                       | —                                         | Constraint‑wrapped type                    | `CREATE DOMAIN positive_int AS integer CHECK (VALUE>0);` |
 | **Pseudo**      | anyelement, anyarray, ... | *Pseudo‑types*                      | —                                         | Function parameter/result types (not columns) | Used in stored procedures             |
 
+
+
+
 ## Learn PostgreSQL - Relational Database (RDBMS)
 
 - [Derek Banas Master postgresql](https://www.youtube.com/watch?v=85pG_pDkITY)
