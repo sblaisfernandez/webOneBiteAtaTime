@@ -1,0 +1,20 @@
+LOAD CSV
+   FROM 'samplefireStationsInCapital.csv' WITH ENCODING iso-646-us
+        HAVING FIELDS
+        (
+           id_caserne,no_caserne,adresse,nom_ssi,updated_at_left,geom
+        )
+   INTO postgresql://postgres:r*2LEEKeEDyneUDwap@db.uymbtcvnwqaiyxdhdyqj.supabase.co:5432/postgres
+        TARGET TABLE geolite.blocks
+        TARGET COLUMNS
+        (
+           iprange ip4r using (ip-range startIpNum endIpNum),
+           locId
+        )
+   WITH truncate,
+        skip header = 1,
+        fields optionally enclosed by '"',
+        fields escaped by backslash-quote,
+        fields terminated by '\t'
+
+    SET work_mem to '32 MB', maintenance_work_mem to '64 MB';
