@@ -1,11 +1,11 @@
 ![elephant](eat_an_elephant.jpg)
 
-# Web One Bite At a Time !
+# Web One Bite At a Time
 
 The Web is huge there is so many thinks to learn and try.
 How to take on such a colossal task? The same way you eat an elephant **One bite at a time**.
 
-## Repo Goal !
+## Repo Goal
 
 The Goal of this repository is to try build small functionality of web technology in pure HTML5, CSS3 and the latest JavaScript.
 
@@ -66,26 +66,26 @@ This idea have been inspire by Wesbos
 
 * Bite WebVR API
 
-## Ressources 
+## Ressources
 
-* [Mozilla Developer Network] (https://developer.mozilla.org/en-US/) 
+* [Mozilla Developer Network] (<https://developer.mozilla.org/en-US/>)
 
-* [Google Web Fondamental] (https://developers.google.com/web/)
+* [Google Web Fondamental] (<https://developers.google.com/web/>)
 
 ### Inspiration
 
-  [Quackit HTML5 tags] (https://www.quackit.com/html_5/tags/) 
+  [Quackit HTML5 tags] (<https://www.quackit.com/html_5/tags/>)
 
-  [Tutorial Republic] (https://www.tutorialrepublic.com/html-reference/html5-tags.php)
+  [Tutorial Republic] (<https://www.tutorialrepublic.com/html-reference/html5-tags.php>)
 
-  [MDN HTML elements reference] (https://developer.mozilla.org/en-US/docs/Web/HTML/Element)
-  
-  [html5 cmarix cheat sheet] (http://www.cmarix.com/Infographics-HTML5-Cheat-Sheet/) 
+  [MDN HTML elements reference] (<https://developer.mozilla.org/en-US/docs/Web/HTML/Element>)
 
-  [MDN Web APIs reference] (https://developer.mozilla.org/en-US/docs/Web/Reference/API)
+  [html5 cmarix cheat sheet] (<http://www.cmarix.com/Infographics-HTML5-Cheat-Sheet/>)
 
-  [MDN WebAPI] (https://developer.mozilla.org/en-US/docs/WebAPI)
+  [MDN Web APIs reference] (<https://developer.mozilla.org/en-US/docs/Web/Reference/API>)
 
-  [MDN Web APIs] (https://developer.mozilla.org/en-US/docs/Web/API)
+  [MDN WebAPI] (<https://developer.mozilla.org/en-US/docs/WebAPI>)
 
-  [Chrome Web APIs] (https://developer.chrome.com/apps/api_other)
+  [MDN Web APIs] (<https://developer.mozilla.org/en-US/docs/Web/API>)
+
+  [Chrome Web APIs] (<https://developer.chrome.com/apps/api_other>)

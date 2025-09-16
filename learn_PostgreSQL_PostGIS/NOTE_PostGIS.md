@@ -9,16 +9,33 @@
 ## 4.1. Spatial Data Model
 
 - Geometry: The planar type.
-
 - Geography: The spheroidal geodetic type.
-
 - Raster: The multiband cell type.
-
 - Topology: The relational
+
+- [Data Management](https://postgis.net/docs/manual-3.6/using_postgis_dbmanagement.html#RefObject)
+
+## Point
+
+Coordinates may contain optional Z and M ordinate values. The Z ordinate is often used to represent elevation. The M ordinate contains a measure value, which may represent time or distance. If Z or M values are present in a geometry value, they must be defined for each point in the geometry. If a geometry has Z or M ordinates the coordinate dimension is 3D; if it has both Z and M the coordinate dimension is 4D.
+
+```sql
+POINT (1 2)
+POINT Z (1 2 3)
+POINT ZM (1 2 3 4)
+```
 
 ## 4.2. Geometry Data Type
 
 The basis for the PostGIS geometry data type is a plane. The shortest path between two points on the plane is a straight line. That means functions on geometries (areas, distances, lengths, intersections, etc) are calculated using straight line vectors and cartesian mathematics. This makes them simpler to implement and faster to execute.
+
+## 4.3 Geography Data Type
+
+The PostGIS geography data type provides native support for spatial features represented on "geographic" coordinates (sometimes called "geodetic" coordinates, or "lat/lon", or "lon/lat"). Geographic coordinates are spherical coordinates expressed in angular units (degrees).
+
+The spatial type modifier restricts the kind of shapes and dimensions allowed in the column. Values allowed for the spatial type are: POINT, LINESTRING, POLYGON, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON, GEOMETRYCOLLECTION. The geography type does not support curves, TINS, or POLYHEDRALSURFACEs.
+
+## 4.4 Geometry Validation
 
 ![Geometry Type Tree](./public/images/geometry-tree.png)
 
@@ -65,6 +82,8 @@ The shortest path between two points on the sphere is a great circle arc. Functi
 The spatial type modifier restricts the kind of shapes and dimensions allowed in the column. Values allowed for the spatial type are: POINT, LINESTRING, POLYGON, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON, GEOMETRYCOLLECTION. The geography type does not support curves, TINS, or POLYHEDRALSURFACEs.
 
 **Best practices to create a table with a column of data type geography**
+
+It is possible to have more than one geometry column in a table.
 
 ```sql
 -- 1) Simple "places" table with a geography Point in WGS84
