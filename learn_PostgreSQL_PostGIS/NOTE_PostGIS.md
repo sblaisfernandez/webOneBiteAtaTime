@@ -228,20 +228,46 @@ CREATE TABLE geoms(gid serial PRIMARY KEY, geom geometry );
 
 ## 4.6.2 GEOMETRY_COLUMNS View
 
-## Spatial Indexes
+## 4.9 Spatial Indexes
 
 ![Spatial Indexes](./public/images/spatial-indexes.png)
 
 Spatial Indexing is a method of organizing spatial data (points, lines, polygons) so that spatial queries can be performed very quickly.
 
-Without an index, spatial queries (like ST_Intersects, ST_Within, ST_DWithin, ST_Contains, ST_Distance) would require a full table scan → comparing every geometry → very slow.
+Why use spatial indexes? Some special objects are quite large and complex they contain many vercel. Instead of indexing objects, directly, spandex is work on the bonding boxes of the objects. The boxes are uniform size and can be compared to determine special relationships very quickly.
+
+![Spatial Indexes Internals](./public/images/spatial_indexes_internals.png)
+
+Without an index, spatial queries (like ST_Intersects, ST_Within, ST_DWithin, ST_Contains, ST_Distance) would require a full table scan comparing every geometry very slow.
 
 With a spatial index, the database can rapidly filter out most geometries and only test the ones that could actually match.
 
-| Index Type               | Description             |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| **R-tree / GIST (Generalized Search Tree)** | Most common in PostGIS — stores geometries in a **hierarchical bounding box tree**.                 |
-| **Quad-tree**            | Divides space into 4 quadrants recursively — used in some in-memory engines or vector tile systems. |
-| **Grid index**           | Divides space into fixed grids — sometimes used in combination with others.                         |
+The B-tree index method commonly used for attribute data is not very useful for spatial data, since it only supports storing and querying data in a single dimension. Data such as geometry (which has 2 or more dimensions) requires an index method that supports range query across all the data dimensions. One of the key advantages of PostgreSQL for spatial data handling is that it offers several kinds of index methods which work well for multi-dimensional data: GiST, BRIN and SP-GiST indexes.
 
-## 4.9 Spatial Index
+### 4.9.1 GiST Indexes
+
+GiST stands for "Generalized Search Tree" and is a generic form of indexing for multi-dimensional data. PostGIS uses an R-Tree index implemented on top of GiST to index spatial data. GiST is the most commonly-used and versatile spatial index method, and offers very good query performance. Other implementations of GiST are used to speed up searches on all kinds of irregular data structures (integer arrays, spectral data, etc) which are not amenable to normal B-Tree indexing.
+
+```sql
+CREATE INDEX [index_name] ON [table_name] USING GIST ( [geometry_field] );
+
+CREATE INDEX [index_name] ON [table_name] USING GIST ([geometry_field] gist_geometry_ops_nd);
+```
+
+Building a spatial index is a computationally intensive exercise. It also blocks write access to your table for the time it creates, so on a production system you may want to do in in a slower CONCURRENTLY-aware way:
+
+```sql
+CREATE INDEX CONCURRENTLY [index_name] ON [table_name] USING GIST ( [geometry_field] );
+```
+
+After building an index, it is sometimes helpful to force PostgreSQL to collect table statistics, which are used to optimize query plans:
+
+```sql
+VACUUM ANALYZE [table_name] [(column_name)];
+```
+
+### 4.9.2 BRIN Indexes
+
+### 4.9.3 SP-GiST Indexes
+
+### 4.9.4 Tuning Index Usage

@@ -2,6 +2,12 @@
 
 This is a collection of the most common commands I run while administering Postgres databases. The variables shown between the open and closed tags, "<" and ">", should be replaced with a name you choose. Postgres has multiple shortcut functions, starting with a forward slash, "\". Any SQL command that is not a shortcut, must end with a semicolon, ";". You can use the keyboard UP and DOWN keys to scroll the history of previous commands you've run.
 
+## SQL
+
+- DDL: Data Definition Language
+
+- DML: Data Manipulation Language
+
 ## Install in Docker for macOS
 
 ```bash
@@ -24,7 +30,7 @@ docker run -it --link mypostgis:postgres --rm postgres \
     sh -c 'exec psql -h "$POSTGRES_PORT_5432_TCP_ADDR" -p "$POSTGRES_PORT_5432_TCP_PORT" -U mypostgis'
 ```
 
-#### Install Docker on macOS
+### Install Docker on macOS
 
 - [Running PostGIS with Docker on Windows, Mac & Linux](https://video.osgeo.org/w/9cZiX3fMCtpPwhZgRw3oqa)
 
@@ -338,7 +344,6 @@ Views can encapsulate complex SELECT statements, including joins, aggregations, 
 
 Views provide a mechanism for fine-grained control over data access. You can create views that expose only a subset of data from underlying tables, hiding sensitive information.
 
-
 ## Manipulate Data
 
 Common DML operations:
@@ -381,6 +386,32 @@ Script and backup / restore operations:
 | Compressed dump | `pg_dump -Fc <database_name> > dump.custom` | Custom format; can be selectively restored. |
 
 Reference: [COPY docs](https://www.postgresql.org/docs/current/sql-copy.html)
+
+## 11.1 Indexes
+
+Suppose we have a table similar to this:
+
+```sql
+CREATE TABLE test1 (
+    id integer,
+    content varchar
+);
+
+SELECT content FROM test1 WHERE id = constant;
+```
+
+With no advance preparation, the system would have to scan the entire test1 table, row by row, to find all matching entries.
+
+But if the system has been instructed to maintain an index on the id column, it can use a more efficient method for locating matching rows. For instance, it might only have to walk a few levels deep into a search tree.
+
+```sql
+CREATE INDEX test1_id_index ON test1 (id);
+VACUUM ANALYZE test1 id;
+EXPLAIN ANALYSE
+SELECT id from test1;
+```
+
+## 14 Performances Tips
 
 ## Debugging
 
