@@ -339,7 +339,6 @@ Views can encapsulate complex SELECT statements, including joins, aggregations, 
 Views provide a mechanism for fine-grained control over data access. You can create views that expose only a subset of data from underlying tables, hiding sensitive information.
 
 
-
 ## Manipulate Data
 
 Common DML operations:

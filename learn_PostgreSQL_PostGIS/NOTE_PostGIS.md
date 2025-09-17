@@ -6,6 +6,10 @@
 - [PostgreSQL Not for professional](https://drive.google.com/drive/u/0/folders/1gnZVVymztzGffrfJttUm5e_7RMx4d9Y-)
 - [PostGIS in action](https://drive.google.com/drive/u/0/home)
 
+**Designing a Spatial Database best practices**
+
+Use a higher level working area for your geospatial database. If you need to do a national analysis, be ready to import international data source to enrich your analysis.
+
 ## 4.1. Spatial Data Model
 
 - Geometry: The planar type.
@@ -34,6 +38,10 @@ The basis for the PostGIS geometry data type is a plane. The shortest path betwe
 The PostGIS geography data type provides native support for spatial features represented on "geographic" coordinates (sometimes called "geodetic" coordinates, or "lat/lon", or "lon/lat"). Geographic coordinates are spherical coordinates expressed in angular units (degrees).
 
 The spatial type modifier restricts the kind of shapes and dimensions allowed in the column. Values allowed for the spatial type are: POINT, LINESTRING, POLYGON, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON, GEOMETRYCOLLECTION. The geography type does not support curves, TINS, or POLYHEDRALSURFACEs.
+
+### 4.3.3 When to use the Geography data type
+
+The geography data type allows you to store data in longitude/latitude coordinates, but at a cost: there are fewer functions defined on GEOGRAPHY than there are on GEOMETRY; those functions that are defined take more CPU time to execute.
 
 ## 4.4 Geometry Validation
 
@@ -81,6 +89,15 @@ The shortest path between two points on the sphere is a great circle arc. Functi
 
 The spatial type modifier restricts the kind of shapes and dimensions allowed in the column. Values allowed for the spatial type are: POINT, LINESTRING, POLYGON, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON, GEOMETRYCOLLECTION. The geography type does not support curves, TINS, or POLYHEDRALSURFACEs.
 
+**PostGIS extended formats are currently a superset of the OGC ones, so that every valid OGC WKB/WKT is also valid EWKB/EWKT.**
+
+```sql
+bytea EWKB = ST_AsEWKB(geometry);
+text EWKT = ST_AsEWKT(geometry);
+geometry = ST_GeomFromEWKB(bytea EWKB);
+geometry = ST_GeomFromEWKT(text EWKT);
+```
+
 **Best practices to create a table with a column of data type geography**
 
 It is possible to have more than one geometry column in a table.
@@ -119,7 +136,57 @@ INSERT INTO public.places (name, geog)
 VALUES ('CN Tower', 'SRID=4326;POINT(-79.3871 43.6426)'::geography);
 ```
 
-## Spatial Reference Systems identifier (SRID)
+### 4.4.2 Valid Geometry
+
+A `POLYGON` is valid if:
+
+1. The polygon boundary rings (the exterior shell ring and interior hole rings) are simple (do not cross or self-touch). Because of this a polygon cannot have cut lines, spikes or loops. This implies that polygon holes must be represented as interior rings, rather than by the exterior ring self-touching (a so-called "inverted hole").
+
+2. boundary rings do not cross
+
+3. boundary rings may touch at points but only as a tangent (i.e. not in a line)
+
+4. interior rings are contained in the exterior ring
+
+5. the polygon interior is simply connected (i.e. the rings must not touch in a way that splits the polygon into more than one part).
+
+PostGIS allows creating and storing both valid and invalid Geometry. This allows invalid geometry to be detected and flagged or fixed.
+
+By default, PostGIS does not check for validity when loading geometry, because validity testing can take a lot of CPU time for complex geometries. If you do not trust your data sources, you can enforce a validity check on your tables by adding a check constraint:
+
+```sql
+ALTER TABLE mytable
+  ADD CONSTRAINT geometry_valid_check
+ CHECK (ST_IsValid(geom));
+```
+
+## 4.5 Spatial Reference Systems identifier (SRID)
+
+A Spatial Reference System (SRS) (also called a Coordinate Reference System (CRS)) defines how geometry is referenced to locations on the Earth's surface. There are three types of SRS:
+
+A geodetic SRS uses angular coordinates (longitude and latitude) which map directly to the surface of the earth.
+
+A projected SRS uses a mathematical projection transformation to "flatten" the surface of the spheroidal earth onto a plane. It assigns location coordinates in a way that allows direct measurement of quantities such as distance, area, and angle. The coordinate system is Cartesian, which means it has a defined origin point and two perpendicular axes (usually oriented North and East). Each projected SRS uses a stated length unit (usually metres or feet). A projected SRS may be limited in its area of applicability to avoid distortion and fit within the defined coordinate bounds.
+
+A local SRS is a Cartesian coordinate system which is not referenced to the earth's surface. In PostGIS this is specified by a SRID value of 0.
+
+There are many different spatial reference systems in use. Common SRSes are standardized in the European Petroleum Survey Group EPSG database. For convenience PostGIS (and many other spatial systems) refers to SRS definitions using an integer identifier called a SRID.
+
+A geometry is associated with a Spatial Reference System by its SRID value, which is accessed by ST_SRID. The SRID for a geometry can be assigned using ST_SetSRID. Some geometry constructor functions allow supplying a SRID (such as ST_Point and ST_MakeEnvelope). The EWKT format supports SRIDs with the SRID=n; prefix.
+
+Spatial functions processing pairs of geometries (such as overlay and relationship functions) require that the input geometries are in the same spatial reference system (have the same SRID). Geometry data can be transformed into a different spatial reference system using ST_Transform and ST_TransformPipeline. Geometry returned from functions has the same SRS as the input geometries.
+
+The `spatial_ref_sys` table definition:
+
+```sql
+CREATE TABLE spatial_ref_sys (
+  srid       INTEGER NOT NULL PRIMARY KEY,
+  auth_name  VARCHAR(256),
+  auth_srid  INTEGER,
+  srtext     VARCHAR(2048),
+  proj4text  VARCHAR(2048)
+)
+```
 
 ```sql
 -- Write a query to list all SRID in the table spatial_ref_sys
@@ -135,7 +202,7 @@ srid_count|
 
 A Spatial Reference System defines how the position of points on the Earth's surface is represented in space — through coordinates that are tied to a specific mathematical model of the Earth.
 
-👉  It consists of:
+It consists of:
 
 a Datum → defines the size and shape of the Earth (ellipsoid) and how that ellipsoid is aligned to the real Earth (geoid);
 
@@ -143,15 +210,33 @@ a Coordinate system → defines how coordinates (latitude, longitude, height, X/
 
 a Map projection (optional) → defines how to flatten the Earth's curved surface into a 2D map.
 
+## 4.6 Creating a Spatial Table
+
+The geometry type supports two optional type modifiers:
+
+the spatial type modifier restricts the kind of shapes and dimensions allowed in the column. The value can be any of the supported geometry subtypes (e.g. POINT, LINESTRING, POLYGON, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON, GEOMETRYCOLLECTION, etc). The modifier supports coordinate dimensionality restrictions by adding suffixes: Z, M and ZM. For example, a modifier of 'LINESTRINGM' allows only linestrings with three dimensions, and treats the third dimension as a measure. Similarly, 'POINTZM' requires four dimensional (XYZM) data.
+
+the SRID modifier restricts the spatial reference system SRID to a particular number. If omitted, the SRID defaults to 0.
+
+**Best practice is to name the geometry `geom` to avoid collision between the data geometry, and the column name**
+
+It is possible to have more than one geometry column in a table. This can be specified when the table is created, or a column can be added.
+
+```sql
+CREATE TABLE geoms(gid serial PRIMARY KEY, geom geometry );
+```
+
+## 4.6.2 GEOMETRY_COLUMNS View
+
 ## Spatial Indexes
 
 ![Spatial Indexes](./public/images/spatial-indexes.png)
 
 Spatial Indexing is a method of organizing spatial data (points, lines, polygons) so that spatial queries can be performed very quickly.
 
-👉 Without an index, spatial queries (like ST_Intersects, ST_Within, ST_DWithin, ST_Contains, ST_Distance) would require a full table scan → comparing every geometry → very slow.
+Without an index, spatial queries (like ST_Intersects, ST_Within, ST_DWithin, ST_Contains, ST_Distance) would require a full table scan → comparing every geometry → very slow.
 
-👉 With a spatial index, the database can rapidly filter out most geometries and only test the ones that could actually match.
+With a spatial index, the database can rapidly filter out most geometries and only test the ones that could actually match.
 
 | Index Type               | Description             |
 | ------------------------------------------- | --------------------------------------------------------------------------------------------------- |
@@ -159,4 +244,4 @@ Spatial Indexing is a method of organizing spatial data (points, lines, polygons
 | **Quad-tree**            | Divides space into 4 quadrants recursively — used in some in-memory engines or vector tile systems. |
 | **Grid index**           | Divides space into fixed grids — sometimes used in combination with others.                         |
 
-## Spatial Functions
+## 4.9 Spatial Index
