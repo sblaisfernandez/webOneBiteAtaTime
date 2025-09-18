@@ -191,6 +191,8 @@ There are several reasons why one might want to use schemas:
 
 PostgreSQL automatically creates a schema called public for every new database. Whatever object you create without specifying the schema name, PostgreSQL will place it into this public schema.
 
+**Best practices: ORM should not define the Schema, it should be define in pure SQL.**
+
 ## Users
 
 | Task | Command | Type | Notes |
